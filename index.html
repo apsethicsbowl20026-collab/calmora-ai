@@ -1217,31 +1217,48 @@ function startAnalyser(){
   }).catch(function(){});
 }
 
-var recFinal='',recRestartT=0;
+var recFinal='',recRestartT=0,recSession=0;
+function killRecognition(){
+  clearTimeout(recRestartT);recSession++;
+  if(SR.rec){var r=SR.rec;SR.rec=null;r.onend=null;r.onresult=null;r.onerror=null;try{r.stop()}catch(e){}}
+}
 function startListening(byVoice){
   if(V.voice==='listening'){commitFromVoice();return}
   if(!SR.ok){toast('Voice input isn\u2019t supported here — the text bar works great.',true);$('#input-text').focus();return}
   stopSpeaking();caption('ai','');caption('user','');
+  // Kill any prior recognizer outright before starting a new one — never
+  // let two sessions run concurrently against the same mic.
+  killRecognition();
   recFinal='';V.byVoice=!!byVoice;
+  var mySession=++recSession;
   var rec;try{rec=new SRCtor()}catch(e){toast('Couldn\u2019t start the microphone.',true);return}
   SR.rec=rec;rec.continuous=true;rec.interimResults=true;rec.lang='en-US';rec.maxAlternatives=1;
   rec.onresult=function(e){
+    if(mySession!==recSession)return;
     var interim='';for(var i=e.resultIndex;i<e.results.length;i++){var r=e.results[i];if(r.isFinal)recFinal+=r[0].transcript;else interim+=r[0].transcript}
     caption('user',(recFinal+' '+interim).trim());
-    if(recFinal.trim()){clearTimeout(recRestartT);recRestartT=setTimeout(function(){if(V.voice==='listening'&&recFinal.trim())commitFromVoice()},950)}
+    if(recFinal.trim()){clearTimeout(recRestartT);recRestartT=setTimeout(function(){if(mySession===recSession&&V.voice==='listening'&&recFinal.trim())commitFromVoice()},950)}
   };
   rec.onerror=function(e){
+    if(mySession!==recSession)return;
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){setVoice('idle');stopAnalyser();toast('Microphone access was blocked — check browser settings, or just type.',true)}
     else if(e.error==='audio-capture'){setVoice('idle');stopAnalyser();toast('No microphone found — the text bar is right there.',true)}
+    else if(e.error==='no-speech'){/* let onend's restart handle it — normal on silence */}
   };
-  rec.onend=function(){if(V.voice==='listening'){try{rec.start()}catch(err){}}};
+  // Only auto-restart if THIS session is still the live one, recognition
+  // is still meant to be listening, and it wasn't stopped deliberately
+  // (SR.rec would already be cleared/reassigned in that case).
+  rec.onend=function(){
+    if(mySession!==recSession)return;
+    if(V.voice==='listening'&&SR.rec===rec){try{rec.start()}catch(err){}}
+  };
   try{rec.start()}catch(e){}
   setVoice('listening');startAnalyser();
 }
 function commitFromVoice(){
-  clearTimeout(recRestartT);
   var text=(recFinal||$('#cap-user').textContent||'').trim();
-  if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();
+  killRecognition();
+  stopAnalyser();
   if(!text){setVoice('idle');caption('user','');return}
   caption('user','');userTurn(text);
 }
@@ -1460,7 +1477,7 @@ $('#input-bar').addEventListener('submit',function(e){
   e.preventDefault();var inp=$('#input-text'),t=inp.value.trim();if(!t)return;
   if(V.busy){toast('Calmora is still answering — one breath.');return}
   inp.value='';V.byVoice=false;
-  if(V.voice==='listening'){if(SR.rec){try{SR.rec.stop()}catch(err){}}stopAnalyser()}
+  if(V.voice==='listening'){killRecognition();stopAnalyser()}
   stopSpeaking();userTurn(t);
 });
 
@@ -1478,7 +1495,7 @@ $('#tx-close').addEventListener('click',function(){$('#tx-panel').classList.remo
 $('#tx-clear').addEventListener('click',function(){newConversation();$('#tx-panel').classList.remove('open')});
 $('#tx-export').addEventListener('click',function(){download('calmora-transcript.json',JSON.stringify(history,null,2));toast('Transcript exported.','good')});
 function newConversation(){
-  turnToken++;V.busy=false;if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();stopSpeaking();
+  turnToken++;V.busy=false;killRecognition();stopAnalyser();stopSpeaking();
   if(turnCancel){try{turnCancel()}catch(e){}}turnCancel=null;
   history=[];persist();setVoice('idle');caption('user','');caption('ai','');renderTranscript();
   toast('Fresh start. Calmora\u2019s here whenever you are.');
