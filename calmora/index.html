@@ -1,0 +1,1857 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#070d0e"/>
+<meta name="description" content="Calmora — a voice-first mental wellness companion. Talk, breathe, listen, sleep. Private by design."/>
+<title>Calmora — a quiet place to think out loud</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='%2317504a'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%2393d6c6' opacity='.7'/%3E%3C/svg%3E"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..650;1,9..144,300..650&family=Karla:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet"/>
+<style>
+/* ═══ tokens ═══ */
+:root{
+  --bg0:#070d0e;--bg1:#0d1c1f;--panel:#101e21;--panel2:#0c181b;--panel3:#142428;
+  --ink:#e9f0ea;--muted:#8fa6a0;--faint:#4f6f6a;
+  --amber:#e9c08c;--amber-hi:#f6ddb6;--amber-deep:#b98d58;
+  --foam:#93d6c6;--foam-deep:#3f8f7f;--coral:#e79f8b;--violet:#b8a6d6;--sky:#8ec6e6;
+  --line:rgba(233,240,235,.08);--line2:rgba(233,240,235,.16);
+  --display:"Fraunces",Georgia,serif;--ui:"Karla",-apple-system,"Segoe UI",sans-serif;
+  --orb-glow:rgba(90,190,166,.38);--ring:rgba(147,214,198,.3);
+  --dock-h:80px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;-webkit-text-size-adjust:100%}
+body{font-family:var(--ui);color:var(--ink);background:var(--bg0);overflow:hidden;
+  background-image:radial-gradient(140% 90% at 50% -5%,#143335 0%,#0d1c1f 44%,#070d0e 100%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea,select{font-family:inherit;color:inherit}
+::selection{background:rgba(233,192,140,.26)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:6px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ═══ bg ═══ */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#bg .grain{position:absolute;inset:0;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+#bg .drift{position:absolute;width:68vmax;height:68vmax;left:-16vmax;top:-26vmax;border-radius:50%;
+  background:radial-gradient(circle,rgba(120,214,190,.09),transparent 62%);
+  animation:drift 48s ease-in-out infinite alternate}
+#bg .drift.d2{left:auto;right:-22vmax;top:auto;bottom:-32vmax;background:radial-gradient(circle,rgba(233,192,140,.06),transparent 60%);animation-duration:62s;animation-delay:-22s}
+@keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(7vmax,6vmax,0)}}
+#bg .vig{position:absolute;inset:0;background:radial-gradient(110% 100% at 50% 42%,transparent 48%,rgba(2,6,7,.7) 100%)}
+#bg-dust i{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(190,230,215,.45);opacity:0;animation:dust linear infinite}
+@keyframes dust{0%{transform:translateY(10px);opacity:0}12%{opacity:.45}88%{opacity:.2}100%{transform:translateY(-50px);opacity:0}}
+
+/* ═══ app frame ═══ */
+#app{position:relative;z-index:1;height:100dvh;display:flex;flex-direction:column}
+#topbar{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;flex:0 0 auto}
+#wordmark{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:.34em;font-size:13px;color:var(--ink)}
+#wordmark svg{width:18px;height:18px}
+#topbar .sp{flex:1}
+.net-pill{display:flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.02);transition:.2s}
+.net-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--foam);box-shadow:0 0 8px var(--foam);transition:.3s}
+.net-pill[data-net="local"] .dot{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.net-pill[data-net="off"] .dot{background:var(--coral);box-shadow:0 0 8px var(--coral)}
+.icon-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--muted);border:1px solid transparent;transition:.2s}
+.icon-btn:hover{color:var(--ink);background:rgba(255,255,255,.05);border-color:var(--line)}
+.icon-btn svg{width:20px;height:20px}
+
+/* ═══ stage / orb ═══ */
+#stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;padding:0 20px calc(var(--dock-h) + 20px);overflow-y:auto;scrollbar-width:none}
+#stage::-webkit-scrollbar{display:none}
+#greeting{margin-top:clamp(2px,1.2vh,12px);font-size:11.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--faint)}
+#heading{font-family:var(--display);font-weight:340;font-size:clamp(26px,5.4vw,42px);letter-spacing:-.01em;margin:7px 0 0;text-align:center;transition:opacity .4s}
+#heading em{font-style:italic;color:var(--amber);font-weight:380}
+.orb-zone{position:relative;margin:clamp(10px,2.8vh,28px) 0 4px}
+.orb{position:relative;width:clamp(200px,52vw,290px);aspect-ratio:1}
+.orb-glow{position:absolute;inset:-44%;border-radius:50%;background:radial-gradient(circle,currentColor 0%,transparent 60%);color:var(--orb-glow);opacity:.52;transition:color .9s,opacity .9s}
+.ring{position:absolute;border-radius:50%;pointer-events:none}
+.ring.r1{inset:-8%;border:1px solid var(--ring);
+  background:conic-gradient(from 0deg,transparent 0 60%,var(--ring) 76%,transparent 90%);
+  -webkit-mask:radial-gradient(circle,transparent 62%,#000 63%);mask:radial-gradient(circle,transparent 62%,#000 63%);
+  animation:spin 15s linear infinite;opacity:.75;transition:opacity .6s,animation-duration .5s}
+.ring.r2{inset:-16%;border:1px solid rgba(233,192,140,.12);
+  background:conic-gradient(from 180deg,transparent 0 68%,rgba(233,192,140,.28) 83%,transparent 95%);
+  -webkit-mask:radial-gradient(circle,transparent 67%,#000 68%);mask:radial-gradient(circle,transparent 67%,#000 68%);
+  animation:spin 28s linear infinite reverse;opacity:.65;transition:opacity .6s}
+.ring.r3{inset:-24%;border:1px dashed rgba(147,214,198,.06);border-radius:50%;animation:spin 52s linear infinite;opacity:.4}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orb-float{position:absolute;inset:0;animation:floaty 6.8s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.orb-core{position:absolute;inset:7%;border-radius:50%;
+  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.55),rgba(255,255,255,0) 42%),
+    radial-gradient(circle at 50% 56%,#1b5f53 0%,#0e2f2c 58%,#070f10 100%);
+  box-shadow:inset -22px -28px 66px rgba(0,0,0,.55),inset 12px 14px 44px rgba(255,255,255,.09),0 0 90px -14px var(--orb-glow);
+  transform:scale(calc(1 + var(--mic,0)*.1));transition:transform .08s linear}
+.orb-core::before,.orb-core::after{content:"";position:absolute;inset:0;border-radius:50%;transition:opacity .9s;
+  background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.35),rgba(255,255,255,0) 42%),radial-gradient(circle at 50% 58%,var(--tint-a),var(--tint-b) 72%)}
+.orb-core::before{--tint-a:#2b8b77;--tint-b:#0d3a35;opacity:0}
+.orb-core::after{--tint-a:#d8a869;--tint-b:#4a3115;opacity:0}
+.orb-ripples i{position:absolute;inset:7%;border-radius:50%;border:1.5px solid var(--foam);opacity:0}
+.orb-particles i{position:absolute;left:50%;top:50%;width:var(--s);height:var(--s);
+  margin:calc(var(--s)/-2) 0 0 calc(var(--s)/-2);border-radius:50%;background:var(--pc);
+  animation:orbit var(--d) linear infinite,twinkle var(--tw) ease-in-out infinite;opacity:.8}
+@keyframes orbit{from{transform:rotate(var(--a0)) translateX(var(--r)) rotate(calc(var(--a0)*-1))}to{transform:rotate(calc(var(--a0) + 360deg)) translateX(var(--r)) rotate(calc((var(--a0) + 360deg)*-1))}}
+@keyframes twinkle{0%,100%{opacity:.12}50%{opacity:.85}}
+
+/* state skins */
+body.state-listening{--orb-glow:rgba(127,224,200,.55);--ring:rgba(147,214,198,.7)}
+body.state-listening .orb-core::before{opacity:.8}
+body.state-listening .orb-ripples i{animation:ripple 2.2s ease-out infinite}
+body.state-listening .orb-ripples i:nth-child(2){animation-delay:.73s}
+body.state-listening .orb-ripples i:nth-child(3){animation-delay:1.46s}
+@keyframes ripple{0%{transform:scale(.95);opacity:.5}100%{transform:scale(1.52);opacity:0}}
+body.state-thinking{--orb-glow:rgba(233,192,140,.45);--ring:rgba(233,192,140,.4)}
+body.state-thinking .orb-core::after{opacity:.65}
+body.state-thinking .ring.r1{animation-duration:2.4s;opacity:1}
+body.state-thinking .ring.r2{animation-duration:3.6s;opacity:1}
+body.state-speaking{--orb-glow:rgba(240,205,150,.55);--ring:rgba(233,192,140,.5)}
+body.state-speaking .orb-core::after{opacity:.85}
+body.state-speaking .orb-core::before{opacity:.2}
+body.state-speaking .orb-core{animation:speakpulse 1.2s ease-in-out infinite}
+@keyframes speakpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+#state-label{margin-top:9px;font-size:11.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);min-height:16px;transition:color .4s}
+body.state-listening #state-label{color:var(--foam)}
+body.state-thinking #state-label,body.state-speaking #state-label{color:var(--amber)}
+
+#captions{width:min(640px,100%);text-align:center;min-height:72px;margin-top:8px;display:flex;flex-direction:column;gap:4px}
+#cap-user{font-size:13.5px;color:var(--faint);font-style:italic;min-height:17px}
+#cap-ai{font-size:17px;line-height:1.52;color:var(--ink);min-height:26px;font-weight:500}
+html.lc #cap-ai{font-size:21px}
+
+/* CTA row */
+#cta-row{display:flex;flex-direction:column;align-items:center;gap:13px;margin-top:12px;width:min(480px,100%)}
+#talk-cta{display:flex;align-items:center;gap:12px;width:100%;justify-content:center;
+  background:var(--amber);color:#241a0d;font-weight:800;font-size:14px;letter-spacing:.22em;text-transform:uppercase;
+  padding:17px 26px;border-radius:999px;box-shadow:0 10px 34px -10px rgba(233,192,140,.45),inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .18s,box-shadow .18s,background .3s}
+#talk-cta:hover{transform:translateY(-2px);box-shadow:0 16px 44px -10px rgba(233,192,140,.55),inset 0 1px 0 rgba(255,255,255,.5)}
+#talk-cta.live{background:transparent;color:var(--foam);border:1.5px solid var(--foam-deep);
+  box-shadow:0 0 0 6px rgba(147,214,198,.07),0 0 30px -6px rgba(147,214,198,.35);animation:livepulse 2s ease-in-out infinite}
+@keyframes livepulse{0%,100%{box-shadow:0 0 0 5px rgba(147,214,198,.06),0 0 26px -6px rgba(147,214,198,.3)}50%{box-shadow:0 0 0 9px rgba(147,214,198,.10),0 0 42px -4px rgba(147,214,198,.45)}}
+#talk-cta svg{width:19px;height:19px}
+#calm-cta{font-size:12.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);padding:8px 4px;transition:.2s;display:flex;gap:8px;align-items:center}
+#calm-cta:hover{color:var(--amber)}
+#calm-cta svg{width:15px;height:15px}
+
+/* input bar */
+#input-bar{display:flex;align-items:center;gap:8px;width:min(580px,100%);margin-top:14px;
+  background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:999px;padding:7px 8px 7px 18px;transition:border-color .25s,box-shadow .25s}
+#input-bar:focus-within{border-color:var(--line2);box-shadow:0 0 0 4px rgba(147,214,198,.06)}
+#input-text{flex:1;background:none;border:0;outline:0;font-size:15.5px;color:var(--ink);padding:9px 0}
+#input-text::placeholder{color:var(--faint)}
+#btn-mic{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--muted);transition:.2s;flex:0 0 auto}
+#btn-mic:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+#btn-mic.live{color:#08201c;background:var(--foam);box-shadow:0 0 22px -2px rgba(147,214,198,.6)}
+#btn-send{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--panel3);color:var(--muted);transition:.2s;flex:0 0 auto}
+#btn-send:hover{color:var(--ink);background:#1a3036}
+#btn-send svg,#btn-mic svg{width:19px;height:19px}
+
+/* quick chips */
+#quick-chips{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.chip{display:flex;align-items:center;gap:6px;font-size:12px;letter-spacing:.06em;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:8px 14px;background:rgba(255,255,255,.02);transition:.2s}
+.chip svg{width:14px;height:14px}
+.chip:hover{color:var(--ink);border-color:var(--line2);background:rgba(255,255,255,.05);transform:translateY(-1px)}
+#checkin-pill{margin-top:14px;font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;border-bottom:1px dashed var(--line2);padding-bottom:2px;transition:.2s}
+#checkin-pill:hover{color:var(--amber)}
+#checkin-pill[hidden]{display:none}
+
+/* ═══ dock ═══ */
+#dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;
+  display:flex;gap:3px;background:rgba(8,14,16,.88);border:1px solid var(--line);border-radius:22px;padding:7px;
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 20px 56px -14px rgba(0,0,0,.75)}
+.dock-btn{display:flex;flex-direction:column;align-items:center;gap:4px;width:62px;padding:8px 4px 6px;border-radius:15px;color:var(--faint);transition:.2s;position:relative}
+.dock-btn svg{width:21px;height:21px}
+.dock-btn span{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.dock-btn:hover{color:var(--muted)}
+.dock-btn.active{color:var(--amber);background:rgba(233,192,140,.09)}
+.dock-btn .bdg{position:absolute;top:6px;right:11px;width:6px;height:6px;border-radius:50%;background:var(--foam)}
+.dock-btn .bdg[hidden]{display:none}
+
+/* ═══ sheets ═══ */
+.sheet{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px}
+.sheet[hidden]{display:none}
+.sheet .backdrop{position:absolute;inset:0;background:rgba(2,7,8,.68);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .25s}
+.sheet .panel{position:relative;width:min(660px,100%);max-height:min(88dvh,800px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
+  background:linear-gradient(180deg,#101e21 0%,#0c181b 100%);border:1px solid var(--line2);border-radius:24px;
+  padding:22px 22px calc(22px + env(safe-area-inset-bottom));opacity:0;transform:translateY(28px) scale(.985);transition:opacity .28s,transform .28s cubic-bezier(.2,.9,.3,1)}
+.sheet.in .backdrop{opacity:1}
+.sheet.in .panel{opacity:1;transform:none}
+.sheet-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.sheet-head h2{font-family:var(--display);font-weight:420;font-size:25px;letter-spacing:-.01em}
+.sheet-head .sub{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
+.sheet-head .icon-btn{margin-left:auto;flex:0 0 auto}
+.sec-label{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint);margin:20px 0 9px;font-weight:700}
+
+/* hub rows */
+.hub-row{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:15px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.02);transition:.2s;margin-bottom:9px}
+.hub-row:hover{border-color:var(--line2);background:rgba(255,255,255,.045);transform:translateX(3px)}
+.hub-row .ic{width:44px;height:44px;flex:0 0 auto;border-radius:13px;display:grid;place-items:center;background:rgba(147,214,198,.09);color:var(--foam)}
+.hub-row .ic svg{width:21px;height:21px}
+.hub-row b{display:block;font-size:15px;font-weight:700;letter-spacing:.01em}
+.hub-row small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45}
+.hub-row .go{margin-left:auto;color:var(--faint);font-size:18px}
+.hub-row.violet .ic{background:rgba(184,166,214,.12);color:var(--violet)}
+.hub-row.sky .ic{background:rgba(142,198,230,.1);color:var(--sky)}
+.hub-row.coral .ic{background:rgba(231,159,139,.1);color:var(--coral)}
+
+/* seg + buttons */
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font-size:13px;padding:8px 14px;border-radius:11px;border:1px solid var(--line);color:var(--muted);transition:.18s;font-weight:600}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:rgba(147,214,198,.12);border-color:var(--foam-deep);color:var(--foam)}
+.mini-select{display:flex;gap:6px;flex-wrap:wrap}
+.mini-select button{min-width:38px;height:38px;border-radius:11px;border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:13px;padding:0 10px;transition:.18s}
+.mini-select button.on{background:rgba(233,192,140,.12);border-color:var(--amber-deep);color:var(--amber)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:12.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  padding:13px 22px;border-radius:999px;transition:.2s;border:1px solid transparent}
+.btn svg{width:15px;height:15px}
+.btn-amber{background:var(--amber);color:#241a0d;box-shadow:0 8px 24px -10px rgba(233,192,140,.5)}
+.btn-amber:hover{transform:translateY(-1px);background:var(--amber-hi)}
+.btn-ghost{border-color:var(--line2);color:var(--muted)}
+.btn-ghost:hover{color:var(--ink);border-color:var(--faint)}
+.btn-foam{background:rgba(147,214,198,.14);color:var(--foam);border-color:var(--foam-deep)}
+.btn-foam:hover{background:rgba(147,214,198,.22)}
+.btn-violet{background:rgba(184,166,214,.14);color:var(--violet);border-color:rgba(184,166,214,.4)}
+.btn-violet:hover{background:rgba(184,166,214,.22)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btn.danger{color:var(--coral);border-color:rgba(231,159,139,.4)}
+.btn.danger.arm{background:rgba(231,159,139,.15)}
+
+/* range inputs */
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:26px;background:transparent;cursor:pointer;min-width:60px}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--foam-deep) var(--fill,50%),rgba(255,255,255,.11) var(--fill,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--ink);margin-top:-6px;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:rgba(255,255,255,.11)}
+input[type=range]::-moz-range-progress{height:3px;border-radius:2px;background:var(--foam-deep)}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:var(--ink)}
+
+/* ═══ sound mixer ═══ */
+.mixer-row{display:grid;grid-template-columns:46px 1fr;gap:3px 13px;padding:13px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.02);margin-bottom:9px;transition:border-color .3s,background .3s}
+.mixer-row.on{border-color:rgba(147,214,198,.35);background:rgba(147,214,198,.05)}
+.mixer-row .m-ic{grid-row:span 3;width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.04);color:var(--faint);transition:.3s;cursor:pointer}
+.mixer-row.on .m-ic{color:var(--foam);background:rgba(147,214,198,.1);box-shadow:0 0 18px -4px rgba(147,214,198,.4)}
+.mixer-row .m-ic svg{width:21px;height:21px}
+.mixer-row .m-top{display:flex;align-items:baseline;gap:10px;cursor:pointer}
+.mixer-row .m-top b{font-size:14.5px;font-weight:700}
+.mixer-row .m-top small{color:var(--faint);font-size:11.5px}
+.mixer-row .m-top .m-play{margin-left:auto;color:var(--faint);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+.mixer-row.on .m-top .m-play{color:var(--foam)}
+.mixer-row .m-sliders{grid-column:2;display:flex;gap:12px;align-items:center}
+.mixer-row .m-sliders label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);width:48px;flex:0 0 auto;font-weight:700}
+.master-row{display:flex;align-items:center;gap:14px;padding:4px 4px 14px}
+.master-row label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:700;flex:0 0 auto;width:52px}
+.master-row .btn{margin-left:auto;padding:9px 14px;font-size:10.5px}
+
+/* ═══ freq lab ═══ */
+#freq-lab{background:rgba(255,255,255,.015);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:4px}
+#freq-lab h4{font-family:var(--display);font-weight:420;font-size:18px;margin-bottom:6px}
+#freq-lab p.sub{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+.freq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:8px;margin-bottom:12px}
+.freq-card{border:1px solid var(--line);border-radius:13px;padding:11px 12px;cursor:pointer;transition:.2s;background:rgba(255,255,255,.02)}
+.freq-card:hover{border-color:var(--line2);background:rgba(255,255,255,.045)}
+.freq-card.on{border-color:var(--violet);background:rgba(184,166,214,.1)}
+.freq-card .fc-hz{font-size:17px;font-weight:800;color:var(--violet);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.freq-card.bb .fc-hz{color:var(--sky)}
+.freq-card.sc .fc-hz{color:var(--foam)}
+.freq-card .fc-name{font-size:12px;font-weight:700;color:var(--ink);margin:3px 0 1px}
+.freq-card .fc-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.freq-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 0 4px;border-top:1px solid var(--line)}
+.freq-controls label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700;flex:0 0 auto}
+.freq-controls input{flex:1;min-width:80px}
+.freq-note{font-size:11.5px;color:var(--faint);line-height:1.55;padding-top:8px;font-style:italic}
+
+/* sleep */
+.sleep-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;margin-top:12px}
+.sleep-row select{background:var(--panel3);border:1px solid var(--line2);border-radius:11px;padding:10px 12px;font-size:13px;color:var(--ink);outline:0}
+.sleep-row .hint{width:100%;font-size:12px;color:var(--faint);line-height:1.5}
+
+/* ═══ breathe ═══ */
+#br-view-run,#br-view-done{display:none}
+.br-circle-wrap{display:grid;place-items:center;padding:22px 0 10px}
+.br-circle{width:min(220px,58vw);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.26),rgba(255,255,255,0) 44%),radial-gradient(circle at 50% 55%,#2b8b77,#0d3a35 70%);
+  box-shadow:inset -16px -20px 50px rgba(0,0,0,.48),0 0 70px -12px rgba(90,190,166,.42);
+  transform:scale(calc(.68 + var(--b,0)*.32))}
+.br-circle .phase{font-family:var(--display);font-size:22px;font-weight:400;letter-spacing:.02em}
+.br-meta{text-align:center;color:var(--muted);font-size:13px;margin-top:12px;letter-spacing:.08em}
+.br-controls{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.br-tip{font-size:12.5px;color:var(--faint);text-align:center;margin-top:10px;line-height:1.55;font-style:italic;max-width:380px;margin-left:auto;margin-right:auto}
+
+/* ═══ grounding ═══ */
+.gr-dots{display:flex;gap:8px;margin:14px 0 5px}
+.gr-dots i{width:26px;height:4px;border-radius:2px;background:rgba(255,255,255,.11);transition:.3s}
+.gr-dots i.done{background:var(--foam-deep)} .gr-dots i.now{background:var(--amber)}
+.gr-q{font-family:var(--display);font-size:clamp(20px,4.8vw,28px);font-weight:400;line-height:1.25;margin:12px 0 4px}
+.gr-q b{color:var(--amber);font-weight:500}
+.gr-hint{color:var(--muted);font-size:13px;line-height:1.55;margin-bottom:12px}
+.gr-input{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:15px;outline:0;resize:none;min-height:70px;transition:border-color .2s;color:var(--ink)}
+.gr-input:focus{border-color:var(--line2)}
+.gr-nav{display:flex;gap:10px;margin-top:14px}
+.gr-nav .btn{flex:1}
+
+/* ═══ journal ═══ */
+.j-toolbar{display:flex;gap:10px;margin:12px 0}
+.j-search{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-size:14px;outline:0;color:var(--ink)}
+.j-search:focus{border-color:var(--line2)}
+.j-entry{border:1px solid var(--line);border-radius:15px;padding:13px 15px;margin-bottom:9px;background:rgba(255,255,255,.02);transition:.2s;position:relative}
+.j-entry:hover{border-color:var(--line2)}
+.j-entry .j-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.j-entry .j-mood{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.j-entry p{font-size:14px;line-height:1.6;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.j-entry .j-del{position:absolute;top:10px;right:10px;color:var(--faint);width:30px;height:30px;border-radius:9px;display:grid;place-items:center;opacity:.45;transition:.2s}
+.j-entry:hover .j-del{opacity:1}
+.j-entry .j-del:hover{color:var(--coral);background:rgba(231,159,139,.1)}
+.j-entry .j-del svg{width:14px;height:14px}
+.j-empty{text-align:center;color:var(--faint);padding:30px 10px;font-size:14px;line-height:1.7}
+.j-editor{border:1px solid var(--line2);border-radius:16px;padding:15px;background:rgba(147,214,198,.035);margin-bottom:13px}
+.j-editor textarea{width:100%;background:none;border:0;outline:0;resize:none;min-height:100px;font-size:15px;line-height:1.6;color:var(--ink)}
+.j-editor .j-prompt{font-size:12px;color:var(--faint);font-style:italic;margin-bottom:9px;display:flex;gap:8px;align-items:center}
+.j-editor .j-prompt button{color:var(--foam);text-decoration:underline dotted;font-size:12px}
+.j-moods{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}
+.j-moods button{font-size:11.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);color:var(--muted);display:flex;gap:5px;align-items:center;transition:.15s}
+.j-moods button i{width:7px;height:7px;border-radius:50%;background:var(--mc)}
+.j-moods button.on{border-color:var(--mc);color:var(--ink);background:rgba(255,255,255,.04)}
+.j-editor .row{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+
+/* ═══ PMR ═══ */
+.pmr-muscle{padding:14px;border:1px solid var(--line);border-radius:14px;text-align:center;background:rgba(255,255,255,.02);margin-bottom:10px}
+.pmr-muscle h4{font-family:var(--display);font-size:19px;font-weight:420;margin-bottom:4px}
+.pmr-muscle p{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+.pmr-bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:10px}
+.pmr-bar-fill{height:100%;background:var(--foam-deep);width:0;transition:width .1s linear}
+
+/* ═══ values ═══ */
+.val-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;margin:10px 0 14px}
+.val-chip{border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;transition:.18s}
+.val-chip:hover{border-color:var(--line2);background:rgba(255,255,255,.04)}
+.val-chip.on{border-color:var(--amber-deep);background:rgba(233,192,140,.1);color:var(--amber-hi)}
+.val-chip .v-name{font-size:13px;font-weight:700;display:block}
+.val-chip .v-icon{font-size:18px;display:block;margin-bottom:4px}
+
+/* ═══ you / insights ═══ */
+.ci-levels{display:flex;gap:7px;margin:10px 0 9px;flex-wrap:wrap}
+.ci-levels button{flex:1;min-width:52px;border:1px solid var(--line);border-radius:13px;padding:11px 4px;display:flex;flex-direction:column;gap:7px;align-items:center;color:var(--muted);transition:.18s;font-size:10.5px;font-weight:700;letter-spacing:.04em}
+.ci-levels button i{width:20px;height:20px;border-radius:50%;border:2px solid var(--mc);transition:.18s}
+.ci-levels button.on{border-color:var(--mc);color:var(--ink);background:rgba(255,255,255,.04)}
+.ci-levels button.on i{background:var(--mc);box-shadow:0 0 12px var(--mc)}
+.tag-cloud{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0 10px}
+.tag-cloud button{font-size:11.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);transition:.15s}
+.tag-cloud button.on{border-color:var(--foam-deep);color:var(--foam);background:rgba(147,214,198,.08)}
+.spark-box{border:1px solid var(--line);border-radius:16px;padding:14px;background:rgba(255,255,255,.02);margin-bottom:4px}
+.spark-empty{color:var(--faint);font-size:13px;line-height:1.6;padding:14px 4px;text-align:center}
+.stat-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line);font-size:13.5px}
+.stat-row:last-child{border-bottom:0}
+.stat-row .k{color:var(--muted)} .stat-row .v{margin-left:auto;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.privacy-note{display:flex;gap:11px;border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:16px}
+.privacy-note svg{width:16px;height:16px;flex:0 0 auto;color:var(--foam);margin-top:1px}
+
+/* ═══ settings ═══ */
+.set-group{border:1px solid var(--line);border-radius:16px;padding:6px 16px;margin-bottom:11px;background:rgba(255,255,255,.012)}
+.set-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.set-row:last-child{border-bottom:0}
+.set-row .lab{flex:1;min-width:0}
+.set-row .lab b{display:block;font-size:13.5px;font-weight:700}
+.set-row .lab small{display:block;color:var(--faint);font-size:11.5px;margin-top:2px;line-height:1.45}
+.set-row input[type=text],.set-row input[type=tel]{width:min(210px,44vw);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px;outline:0;color:var(--ink)}
+.set-row input:focus{border-color:var(--line2)}
+.set-row select{background:var(--panel3);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:13px;max-width:min(210px,44vw);outline:0;color:var(--ink)}
+.set-row input[type=range]{width:120px;flex:0 0 auto}
+.switch{position:relative;width:46px;height:27px;flex:0 0 auto}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;margin:0}
+.switch .tr{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.13);transition:.2s;pointer-events:none}
+.switch .tr::after{content:"";position:absolute;width:21px;height:21px;border-radius:50%;background:var(--ink);top:3px;left:3px;transition:.2s}
+.switch input:checked + .tr{background:var(--foam-deep)}
+.switch input:checked + .tr::after{left:22px;background:#062019}
+.key-field{position:relative;display:inline-flex;align-items:center}
+.key-field input{width:min(240px,46vw);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:9px 38px 9px 11px;font-size:13px;outline:0;color:var(--ink);letter-spacing:.02em}
+.key-field input:focus{border-color:var(--line2)}
+.key-eye{position:absolute;right:4px;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--faint);transition:.18s}
+.key-eye:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.key-eye svg{width:16px;height:16px}
+.key-status{font-size:11px;margin:6px 0 0;letter-spacing:.04em;min-height:14px;padding:0 2px}
+.key-status.ok{color:var(--foam)} .key-status.bad{color:var(--coral)} .key-status.check{color:var(--faint)}
+.hint-line{font-size:12px;color:var(--faint);line-height:1.6;margin-top:12px}
+.hint-line a{text-decoration:none}
+
+/* ═══ transcript ═══ */
+#tx-panel{position:fixed;inset:0;right:0;left:auto;width:min(440px,100%);z-index:65;
+  background:linear-gradient(180deg,var(--panel),var(--panel2));border-left:1px solid var(--line2);
+  transform:translateX(102%);transition:transform .32s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column;
+  padding:calc(16px + env(safe-area-inset-top)) 18px 18px}
+#tx-panel.open{transform:none}
+#tx-panel header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+#tx-panel header h3{font-family:var(--display);font-size:20px;font-weight:430}
+#tx-list{flex:1;overflow-y:auto;overscroll-behavior:contain;padding-right:4px}
+.tx-msg{margin-bottom:13px;max-width:92%}
+.tx-msg .who{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);margin-bottom:3px;font-weight:700}
+.tx-msg p{font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.tx-msg.user{margin-left:auto} .tx-msg.user .who{color:var(--foam-deep)} .tx-msg.user p{color:var(--muted)}
+.tx-msg.ai .who{color:var(--amber-deep)}
+.tx-msg .loc{color:var(--faint);font-size:10.5px;font-style:italic}
+#tx-panel footer{display:flex;gap:8px;margin-top:12px}
+#tx-panel footer .btn{flex:1;padding:10px 8px;font-size:10.5px}
+
+/* ═══ crisis card ═══ */
+#crisis-card{position:fixed;left:50%;transform:translateX(-50%) translateY(130%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:80;
+  width:min(540px,calc(100% - 20px));background:linear-gradient(180deg,#231a17,#1a1412);
+  border:1px solid rgba(231,159,139,.38);border-radius:20px;padding:18px 18px 15px;
+  box-shadow:0 26px 72px -18px rgba(0,0,0,.82);transition:transform .4s cubic-bezier(.2,.9,.3,1)}
+#crisis-card.show{transform:translateX(-50%) translateY(0)}
+#crisis-card h4{font-family:var(--display);font-size:18px;font-weight:440;color:#f2d9cf;margin-bottom:5px}
+#crisis-card p{font-size:13px;line-height:1.6;color:#cdb4aa;margin-bottom:11px}
+.c-actions{display:flex;flex-direction:column;gap:7px}
+a.c-call{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--coral);color:#2a130c;font-weight:800;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;padding:13px;border-radius:13px}
+a.c-link{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(231,159,139,.38);color:#e9c3b6;font-size:12.5px;text-decoration:none;padding:11px;border-radius:13px;font-weight:600}
+#crisis-card svg{width:15px;height:15px}
+.c-dismiss{margin:9px auto 0;display:block;color:#a08578;font-size:12px;text-decoration:underline dotted;padding:4px}
+
+/* ═══ calm now ═══ */
+#calmnow{position:fixed;inset:0;z-index:70;background:radial-gradient(120% 100% at 50% 28%,#12292b 0%,#0a1517 58%,#070f10 100%);display:grid;place-items:center;text-align:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .5s}
+#calmnow.open{opacity:1;pointer-events:auto}
+#cn-inner{max-width:500px;width:100%}
+#cn-orb{width:140px;aspect-ratio:1;margin:28px auto;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.3),rgba(255,255,255,0) 42%),radial-gradient(circle at 50% 55%,#2b8b77,#0d3a35 72%);
+  box-shadow:inset -14px -18px 44px rgba(0,0,0,.5),0 0 60px -8px rgba(90,190,166,.45);
+  transform:scale(calc(.72 + var(--b,0)*.28))}
+#cn-text{font-family:var(--display);font-weight:360;font-size:clamp(22px,5.2vw,32px);line-height:1.38;letter-spacing:-.01em;min-height:90px;display:flex;align-items:center;justify-content:center;transition:opacity .45s}
+#cn-sub{color:var(--muted);font-size:14px;margin-top:10px;min-height:20px;transition:opacity .45s}
+#cn-controls{display:flex;gap:10px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+#cn-skip{position:absolute;top:calc(16px + env(safe-area-inset-top));right:18px;color:var(--faint);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;padding:10px}
+#cn-skip:hover{color:var(--ink)}
+
+/* ═══ sleep ═══ */
+#sleep-mode{position:fixed;inset:0;z-index:72;background:#030709;display:grid;place-items:center;text-align:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 1.4s}
+#sleep-mode.open{opacity:1;pointer-events:auto}
+#sleep-clock{font-family:var(--display);font-weight:300;font-size:clamp(50px,13vw,92px);letter-spacing:.03em;color:#c8e0d8;font-variant-numeric:tabular-nums}
+#sleep-label{font-size:10.5px;letter-spacing:.36em;text-transform:uppercase;color:#4a6560;margin-top:8px}
+#sleep-sound{color:#6e9a94;font-size:13.5px;margin-top:20px;display:flex;align-items:center;justify-content:center;gap:8px}
+#sleep-sound svg{width:15px;height:15px}
+.sleep-breath{width:9px;height:9px;border-radius:50%;background:#7ea79d;margin:24px auto 0;animation:sb 6.5s ease-in-out infinite}
+@keyframes sb{0%,100%{transform:scale(.65);opacity:.35}50%{transform:scale(1.6);opacity:1}}
+#sleep-ui{position:absolute;left:0;right:0;bottom:calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:13px;align-items:center;opacity:0;transition:opacity .4s;pointer-events:none}
+#sleep-mode.awake #sleep-ui{opacity:1;pointer-events:auto}
+#sleep-chips{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;padding:0 16px}
+#sleep-chips button{width:43px;height:43px;border-radius:13px;border:1px solid rgba(255,255,255,.13);color:#7ea79d;display:grid;place-items:center;transition:.2s}
+#sleep-chips button.on{border-color:var(--foam-deep);color:var(--foam);background:rgba(147,214,198,.1)}
+#sleep-chips button svg{width:18px;height:18px}
+#sleep-btns{display:flex;gap:10px}
+#sleep-btns .btn{padding:11px 18px;font-size:11px}
+
+/* ═══ toast ═══ */
+#toast-region{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--dock-h) + 24px);z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:rgba(12,22,24,.96);border:1px solid var(--line2);color:var(--ink);font-size:13px;padding:11px 18px;border-radius:999px;box-shadow:0 12px 34px -8px rgba(0,0,0,.6);opacity:0;transform:translateY(10px);transition:.3s;max-width:min(500px,90vw);text-align:center;line-height:1.45}
+.toast.show{opacity:1;transform:none}
+.toast.warn{border-color:rgba(233,192,140,.38)}
+.toast.good{border-color:rgba(147,214,198,.38)}
+
+/* reduced motion */
+@media(prefers-reduced-motion:reduce){html:not(.motion-ok) *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.15s !important}html:not(.motion-ok) #bg-dust,html:not(.motion-ok) .orb-particles{display:none}}
+html.rm *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.15s !important}
+html.rm #bg-dust,html.rm .orb-particles{display:none}
+html.rm .orb-float{animation:none}
+@media(max-width:430px){#cta-row{margin-top:6px}.dock-btn{width:55px}.freq-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
+</style>
+</head>
+<body class="state-idle">
+
+<!-- icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-7-5.5 16L11 13l-7-1z"/><path d="M11 13l9-8"/></symbol>
+<symbol id="i-wind" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h7a2.5 2.5 0 1 1-2.5 2.5"/></symbol>
+<symbol id="i-waves" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2"/><path d="M2 14c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2"/></symbol>
+<symbol id="i-tree" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l5 6h-3l4 5h-4.5l3.5 5H7l3.5-5H6l4-5H7l5-6z"/><path d="M12 19v3"/></symbol>
+<symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-3.5 5-3.5 9a5.5 5.5 0 0 0 11 0c0-2.5-1.5-4-2.5-5.5-.3 1.6-1 2.5-2 3 .5-2.5 0-5-3-6.5z"/></symbol>
+<symbol id="i-noise" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2l2-6 3 12 3-16 3 14 2-8 1.5 4H21"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8.5 8.5 0 0 1 10.5 4 7.5 7.5 0 1 0 20 13.5z"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h14v18H6a2 2 0 0 0-2 2V5z"/><path d="M4 19a2 2 0 0 1 2-2h14"/></symbol>
+<symbol id="i-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></symbol>
+<symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19C5 9 12 4 20 4c0 9-4 15-13 15"/><path d="M5 19c2-5 6-9 11-11"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-9.3-9A5.2 5.2 0 0 1 12 6.4 5.2 5.2 0 0 1 21.3 11c-1.8 4.4-9.3 9-9.3 9z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M4.2 16.5l2.6-1.5M17.2 9l2.6-1.5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l1.5 4.5L8 10a12 12 0 0 0 6 6l1.5-2.5L20 15v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5"/><path d="M19 5l-9 9"/><path d="M19 14v5H5V5h5"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5z"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="3.6" height="14" rx="1.2"/><rect x="13.9" y="5" width="3.6" height="14" rx="1.2"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 7"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.1A9.7 9.7 0 0 1 12 6c6.5 0 10 6 10 6a16 16 0 0 1-3.2 3.9"/><path d="M6.6 6.6A16 16 0 0 0 2 12s3.5 7 10 7a9.6 9.6 0 0 0 4.2-.95"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+<symbol id="i-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+<symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5a3.5 3.5 0 0 0 0 7h.5m5-7a3.5 3.5 0 0 1 0 7h-.5"/><path d="M12 4.5v7m0 0v8m-3.5 0a3.5 3.5 0 0 0 7 0"/><path d="M6 8a3 3 0 0 0-2 5.5M18 8a3 3 0 0 1 2 5.5"/></symbol>
+<symbol id="i-spa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c0 4-4 8-8 8 0-4 4-8 8-8z"/><path d="M12 4c0 4 4 8 8 8-4 0-8-4-8-8z"/><path d="M12 12v8"/></symbol>
+</defs></svg>
+
+<div id="bg" aria-hidden="true">
+  <div class="drift"></div><div class="drift d2"></div>
+  <div id="bg-dust"></div><div class="grain"></div><div class="vig"></div>
+</div>
+
+<div id="app">
+  <header id="topbar">
+    <div id="wordmark"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="#17504a"/><circle cx="12" cy="12" r="4" fill="#93d6c6" opacity=".75"/></svg>CALMORA</div>
+    <div class="sp"></div>
+    <button class="net-pill" id="net-pill" data-net="local"><span class="dot" aria-hidden="true"></span><span id="net-text">checking…</span></button>
+    <button class="icon-btn" id="btn-new" aria-label="New conversation" title="New conversation"><svg aria-hidden="true"><use href="#i-plus"/></svg></button>
+    <button class="icon-btn" id="btn-transcript" aria-label="Transcript" title="Transcript"><svg aria-hidden="true"><use href="#i-list"/></svg></button>
+    <button class="icon-btn" id="btn-settings" aria-label="Settings" title="Settings"><svg aria-hidden="true"><use href="#i-gear"/></svg></button>
+  </header>
+
+  <main id="stage">
+    <p id="greeting">good evening</p>
+    <h1 id="heading">What&rsquo;s on your <em>mind</em>?</h1>
+    <div class="orb-zone">
+      <div class="orb" id="orb" aria-hidden="true">
+        <div class="orb-glow"></div>
+        <i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i>
+        <div class="orb-ripples"><i></i><i></i><i></i></div>
+        <div class="orb-float"><div class="orb-core" id="orb-core"></div></div>
+        <div class="orb-particles" id="orb-particles"></div>
+      </div>
+    </div>
+    <p id="state-label" aria-hidden="true">tap to talk · type if you prefer</p>
+    <div id="captions"><p id="cap-user"></p><p id="cap-ai" lang="en"></p></div>
+    <div id="cta-row">
+      <button id="talk-cta"><svg aria-hidden="true"><use href="#i-mic"/></svg><span id="talk-cta-label">Talk to Calmora</span></button>
+      <button id="calm-cta"><svg aria-hidden="true"><use href="#i-heart"/></svg>Calm me now</button>
+    </div>
+    <form id="input-bar" autocomplete="off">
+      <label class="sr-only" for="input-text">Type a message to Calmora</label>
+      <input id="input-text" type="text" placeholder="or type it here…" enterkeyhint="send"/>
+      <button type="button" id="btn-mic" aria-label="Start voice input"><svg aria-hidden="true"><use href="#i-mic"/></svg></button>
+      <button type="submit" id="btn-send" aria-label="Send message"><svg aria-hidden="true"><use href="#i-send"/></svg></button>
+    </form>
+    <div id="quick-chips" role="navigation" aria-label="Quick actions">
+      <button class="chip" data-open="breathe"><svg aria-hidden="true"><use href="#i-wind"/></svg>Breathe</button>
+      <button class="chip" data-open="sounds"><svg aria-hidden="true"><use href="#i-waves"/></svg>Soundscapes</button>
+      <button class="chip" data-open="ground"><svg aria-hidden="true"><use href="#i-leaf"/></svg>Grounding</button>
+      <button class="chip" data-open="calm"><svg aria-hidden="true"><use href="#i-heart"/></svg>Calm hub</button>
+      <button class="chip" data-open="journal"><svg aria-hidden="true"><use href="#i-book"/></svg>Journal</button>
+    </div>
+    <button id="checkin-pill" hidden>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5s1.2 1.5 3.5 1.5 3.5-1.5 3.5-1.5"/><circle cx="9" cy="9.8" r=".6" fill="currentColor"/><circle cx="15" cy="9.8" r=".6" fill="currentColor"/></svg>
+      How are you arriving today? — quick check-in
+    </button>
+  </main>
+
+  <nav id="dock" aria-label="Main navigation">
+    <button class="dock-btn active" data-dock="talk"><svg aria-hidden="true"><use href="#i-mic"/></svg><span>Talk</span></button>
+    <button class="dock-btn" data-dock="calm"><svg aria-hidden="true"><use href="#i-heart"/></svg><span>Calm</span></button>
+    <button class="dock-btn" data-dock="sounds"><svg aria-hidden="true"><use href="#i-waves"/></svg><span>Sounds</span></button>
+    <button class="dock-btn" data-dock="journal"><svg aria-hidden="true"><use href="#i-book"/></svg><span>Journal</span><i class="bdg" id="dock-j" hidden></i></button>
+    <button class="dock-btn" data-dock="you"><svg aria-hidden="true"><use href="#i-pulse"/></svg><span>You</span><i class="bdg" id="dock-y" hidden></i></button>
+  </nav>
+</div>
+
+<!-- ═══ CALM HUB ═══ -->
+<div class="sheet" id="sheet-calm" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="calm-title">
+    <div class="sheet-head"><div><h2 id="calm-title">A softer minute</h2><p class="sub">Grounded, proven tools — nothing to do perfectly.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <button class="hub-row" id="hub-calmnow"><span class="ic"><svg aria-hidden="true"><use href="#i-heart"/></svg></span><span><b>Calm me now</b><small>A 90-second guided reset — breath, body, present moment.</small></span><span class="go">›</span></button>
+    <button class="hub-row" data-open="breathe"><span class="ic"><svg aria-hidden="true"><use href="#i-wind"/></svg></span><span><b>Guided breathing</b><small>Box, 4-7-8, coherent, physiological sigh — orb sets the pace.</small></span><span class="go">›</span></button>
+    <button class="hub-row" data-open="ground"><span class="ic"><svg aria-hidden="true"><use href="#i-leaf"/></svg></span><span><b>5-4-3-2-1 grounding</b><small>Walk your attention back into the room, sense by sense.</small></span><span class="go">›</span></button>
+    <button class="hub-row violet" id="hub-pmr"><span class="ic"><svg aria-hidden="true"><use href="#i-spa"/></svg></span><span><b>Progressive muscle relaxation</b><small>Tense and release, head to toe — 6–8 minutes.</small></span><span class="go">›</span></button>
+    <button class="hub-row sky" id="hub-values"><span class="ic"><svg aria-hidden="true"><use href="#i-brain"/></svg></span><span><b>Values clarification</b><small>What matters most to you right now? ACT-based exercise.</small></span><span class="go">›</span></button>
+    <button class="hub-row" data-open="sounds"><span class="ic"><svg aria-hidden="true"><use href="#i-moon"/></svg></span><span><b>Sleep mode</b><small>Soundscape + fade-out timer — tap the orb, drift off.</small></span><span class="go">›</span></button>
+    <p class="hint-line">All tools work fully on your device — no connection needed.</p>
+  </div>
+</div>
+
+<!-- ═══ BREATHE ═══ -->
+<div class="sheet" id="sheet-breathe" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="br-title">
+    <div class="sheet-head"><div><h2 id="br-title">Guided breathing</h2><p class="sub">Follow the circle. In through the nose when you can — out slow, always.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div id="br-view-setup">
+      <p class="sec-label">Pattern</p>
+      <div class="seg" id="br-pattern" role="group" aria-label="Breathing pattern">
+        <button data-p="coherent" class="on">Coherent 5.5</button>
+        <button data-p="box">Box 4-4-4-4</button>
+        <button data-p="sigh">Physio sigh</button>
+        <button data-p="unwind">4-7-8 unwind</button>
+        <button data-p="tactical">Tactical 4-4</button>
+        <button data-p="exhale">Long exhale</button>
+      </div>
+      <p class="sec-label">Cycles</p>
+      <div class="mini-select" id="br-cycles" role="group" aria-label="Number of cycles">
+        <button data-c="2">2</button><button data-c="4" class="on">4</button><button data-c="6">6</button><button data-c="8">8</button><button data-c="12">12</button>
+      </div>
+      <div class="br-controls"><button class="btn btn-amber" id="br-start">Begin</button></div>
+      <p class="br-tip" id="br-tip"></p>
+    </div>
+    <div id="br-view-run">
+      <div class="br-circle-wrap"><div class="br-circle" id="br-circle"><span class="phase" id="br-phase">Inhale</span></div></div>
+      <p class="br-meta" id="br-meta">Cycle 1 of 4</p>
+      <div class="br-controls"><button class="btn btn-ghost" id="br-end">End early</button></div>
+    </div>
+    <div id="br-view-done">
+      <div class="br-circle-wrap"><div class="br-circle" style="--b:.5"><span class="phase">✓</span></div></div>
+      <p class="br-meta" id="br-summary">Done. Well done.</p>
+      <div class="br-controls"><button class="btn btn-foam" id="br-again">Again</button><button class="btn btn-ghost" data-close>Close</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SOUNDS ═══ -->
+<div class="sheet" id="sheet-sounds" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="snd-title">
+    <div class="sheet-head"><div><h2 id="snd-title">Sound therapy</h2><p class="sub">All synthesised live in your browser — no downloads, no loops. Layer freely.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="master-row">
+      <label for="snd-master">Master</label>
+      <input type="range" id="snd-master" min="0" max="100" value="80" aria-label="Master volume"/>
+      <button class="btn btn-ghost" id="snd-stopall">Stop all</button>
+    </div>
+    <div id="snd-list"></div>
+    <div id="freq-lab">
+      <h4>Frequency lab</h4>
+      <p class="sub">Binaural beats require headphones and work by playing two slightly different tones, one per ear — your brain perceives the difference as a gentle pulse that guides brainwave states. Solfeggio tones are pure drones with long therapeutic traditions. Layer them over any soundscape.</p>
+      <div class="freq-grid" id="freq-grid"></div>
+      <div class="freq-controls">
+        <label for="freq-vol">Volume</label>
+        <input type="range" id="freq-vol" min="0" max="100" value="30" aria-label="Frequency lab volume"/>
+        <label for="freq-carrier" style="margin-left:8px">Carrier</label>
+        <input type="range" id="freq-carrier" min="100" max="440" value="200" aria-label="Carrier frequency Hz" step="5"/>
+        <span id="freq-carrier-label" style="font-size:11px;color:var(--faint);white-space:nowrap;min-width:42px">200 Hz</span>
+      </div>
+      <p class="freq-note" id="freq-note">Select a preset above. Use headphones for binaural beats.</p>
+    </div>
+    <div class="sleep-row">
+      <svg width="17" height="17" style="color:var(--muted)" aria-hidden="true"><use href="#i-moon"/></svg>
+      <label class="sr-only" for="sleep-mins">Sleep timer minutes</label>
+      <select id="sleep-mins"><option value="5">5 min</option><option value="10">10 min</option><option value="15" selected>15 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select>
+      <button class="btn btn-foam" id="sleep-start"><svg aria-hidden="true"><use href="#i-moon"/></svg>Sleep mode</button>
+      <p class="hint-line">Starts playing (ocean if nothing is active) and fades gently at the end.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GROUND ═══ -->
+<div class="sheet" id="sheet-ground" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="gr-title">
+    <div class="sheet-head"><div><h2 id="gr-title">5-4-3-2-1 grounding</h2><p class="sub">A slow walk through your senses. Say them aloud, type them, or just notice quietly.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="gr-dots" id="gr-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <div id="gr-body"></div>
+  </div>
+</div>
+
+<!-- ═══ JOURNAL ═══ -->
+<div class="sheet" id="sheet-journal" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="j-title">
+    <div class="sheet-head"><div><h2 id="j-title">Journal</h2><p class="sub">Private by design — entries never leave this device.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="j-toolbar">
+      <input class="j-search" id="j-search" type="search" placeholder="Search entries…" aria-label="Search journal"/>
+      <button class="btn btn-amber" id="j-new" style="padding:11px 16px"><svg aria-hidden="true"><use href="#i-plus"/></svg>New</button>
+    </div>
+    <div class="j-editor" id="j-editor" hidden>
+      <p class="j-prompt"><span id="j-prompt-text"></span><button type="button" id="j-prompt-next">another</button></p>
+      <textarea id="j-text" placeholder="Let it land on the page…" aria-label="Journal entry"></textarea>
+      <div class="j-moods" id="j-moods" aria-label="Attach a mood"></div>
+      <div class="row"><button class="btn btn-ghost" id="j-cancel" style="padding:9px 14px;font-size:11px">Cancel</button><button class="btn btn-foam" id="j-save" style="padding:9px 14px;font-size:11px">Save entry</button></div>
+    </div>
+    <div id="j-list"></div>
+    <div class="br-controls" style="margin-top:14px"><button class="btn btn-ghost" id="j-export"><svg aria-hidden="true"><use href="#i-download"/></svg>Export</button></div>
+  </div>
+</div>
+
+<!-- ═══ YOU ═══ -->
+<div class="sheet" id="sheet-you" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="you-title">
+    <div class="sheet-head"><div><h2 id="you-title">You, lately</h2><p class="sub">Small honest reflections — not metrics, not diagnoses.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <p class="sec-label">How do you feel right now?</p>
+    <div class="ci-levels" id="ci-levels" role="group" aria-label="Mood level">
+      <button data-l="1" style="--mc:#7d8fa8"><i></i>Heavy</button>
+      <button data-l="2" style="--mc:#8fb0a2"><i></i>Low</button>
+      <button data-l="3" style="--mc:#c9c39a"><i></i>Okay</button>
+      <button data-l="4" style="--mc:#e9c08c"><i></i>Good</button>
+      <button data-l="5" style="--mc:#93d6c6"><i></i>Light</button>
+    </div>
+    <div class="tag-cloud" id="ci-tags" aria-label="Any of these true right now?"></div>
+    <input class="j-search" id="ci-note" type="text" placeholder="One line about it (optional)" aria-label="Check-in note" style="margin-bottom:10px"/>
+    <div class="br-controls" style="justify-content:flex-start"><button class="btn btn-foam" id="ci-save">Save check-in</button></div>
+    <p class="sec-label">Last 14 check-ins</p>
+    <div class="spark-box"><div id="in-spark"></div></div>
+    <p class="sec-label">Gentle numbers</p>
+    <div id="in-stats"></div>
+    <div class="privacy-note"><svg aria-hidden="true"><use href="#i-shield"/></svg><span>Everything here lives only in your browser. Check-ins are reflections, not medical data — and Calmora is a companion, not a clinician.</span></div>
+    <div class="br-controls" style="margin-top:16px">
+      <button class="btn btn-ghost" id="btn-export-all"><svg aria-hidden="true"><use href="#i-download"/></svg>Export my data</button>
+      <button class="btn danger btn-ghost" id="btn-erase">Erase everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PMR SHEET ═══ -->
+<div class="sheet" id="sheet-pmr" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="pmr-title">
+    <div class="sheet-head"><div><h2 id="pmr-title">Progressive muscle relaxation</h2><p class="sub">Tense each group for 5 seconds, then let go completely. Notice the difference.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div id="pmr-body"></div>
+  </div>
+</div>
+
+<!-- ═══ VALUES SHEET ═══ -->
+<div class="sheet" id="sheet-values" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="val-title">
+    <div class="sheet-head"><div><h2 id="val-title">What matters to you?</h2><p class="sub">Pick the values that feel most alive right now — no right answers. This is from ACT therapy.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <p class="sec-label">Choose up to 5 values that resonate today</p>
+    <div class="val-grid" id="val-grid"></div>
+    <div id="val-reflect" hidden>
+      <p class="sec-label">Reflect on your top values</p>
+      <p id="val-reflect-q" style="font-size:15px;line-height:1.6;color:var(--muted);margin-bottom:12px"></p>
+      <textarea class="gr-input" id="val-reflect-text" placeholder="Write freely…" style="min-height:90px"></textarea>
+      <div class="br-controls" style="margin-top:12px">
+        <button class="btn btn-foam" id="val-save">Save to journal</button>
+        <button class="btn btn-ghost" data-close>Done</button>
+      </div>
+    </div>
+    <div class="br-controls" id="val-cta" style="margin-top:4px"><button class="btn btn-amber" id="val-next">Reflect →</button></div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS ═══ -->
+<div class="sheet" id="sheet-settings" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="set-title">
+    <div class="sheet-head"><div><h2 id="set-title">Settings</h2><p class="sub">Model, voice, safety, accessibility. Stored locally.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <p class="sec-label">AI</p>
+    <div class="set-group">
+      <div class="set-row"><span class="lab"><b>Your OpenRouter API key</b><small>Optional. With a key, Calmora talks to OpenRouter directly — no server needed. Stored only on this device.</small></span>
+        <span class="key-field"><input type="password" id="set-key" spellcheck="false" autocomplete="off" placeholder="sk-or-v1-…" aria-label="OpenRouter API key"/>
+        <button type="button" class="key-eye" id="set-key-eye" aria-label="Toggle key visibility" aria-pressed="false"><svg aria-hidden="true"><use href="#i-eye"/></svg></button></span>
+      </div>
+      <div class="set-row"><span class="lab"><b>API endpoint</b><small>Leave as /api/chat unless self-hosting elsewhere.</small></span><input type="text" id="set-endpoint" spellcheck="false" aria-label="API endpoint"/></div>
+      <div class="set-row"><span class="lab"><b>Model</b><small>Any OpenRouter model id — switch providers any time.</small></span><input type="text" id="set-model" spellcheck="false" aria-label="Model"/></div>
+      <div class="set-row"><span class="lab"><b>Auto-continue listening</b><small>Mic reopens after Calmora finishes speaking.</small></span><span class="switch"><input type="checkbox" id="set-auto"/><span class="tr"></span></span></div>
+    </div>
+    <p class="key-status" id="key-status"></p>
+    <p class="hint-line"><a href="https://openrouter.ai/keys" target="_blank" rel="noopener" style="color:var(--foam)">Get a free OpenRouter key →</a> &nbsp;·&nbsp; No key? Use a Worker proxy — the offline companion works with neither.</p>
+    <p class="sec-label">Voice</p>
+    <div class="set-group">
+      <div class="set-row"><span class="lab"><b>Speak replies</b><small>Turn off for text-only mode.</small></span><span class="switch"><input type="checkbox" id="set-speak"/><span class="tr"></span></span></div>
+      <div class="set-row"><span class="lab"><b>Voice</b><small>Uses your browser's installed voices.</small></span><select id="set-voice" aria-label="Voice"></select></div>
+      <div class="set-row"><span class="lab"><b>Pace</b></span><input type="range" id="set-rate" min="0.8" max="1.15" step="0.05" aria-label="Speech rate"/></div>
+      <div class="set-row"><span class="lab"><b>Large captions</b></span><span class="switch"><input type="checkbox" id="set-large"/><span class="tr"></span></span></div>
+    </div>
+    <p class="sec-label">Safety</p>
+    <div class="set-group">
+      <div class="set-row"><span class="lab"><b>Emergency label</b><small>Shown on the safety card, e.g. "999", "112", "988".</small></span><input type="text" id="set-em-label" placeholder="Local emergency number" aria-label="Emergency label"/></div>
+      <div class="set-row"><span class="lab"><b>Emergency number</b><small>Tap-to-call from the safety card.</small></span><input type="tel" id="set-em-number" placeholder="+…" aria-label="Emergency number"/></div>
+      <div class="set-row"><span class="lab"><b>Trusted person</b><small>Name and number shown when things feel heavy.</small></span>
+        <span style="display:flex;flex-direction:column;gap:7px"><input type="text" id="set-trust-name" placeholder="Name" aria-label="Trusted person name"/><input type="tel" id="set-trust-number" placeholder="Number" aria-label="Trusted person number"/></span></div>
+    </div>
+    <p class="sec-label">Accessibility</p>
+    <div class="set-group">
+      <div class="set-row"><span class="lab"><b>Reduce motion</b><small>Stills the orb; state shown by colour and text.</small></span><span class="switch"><input type="checkbox" id="set-rm"/><span class="tr"></span></span></div>
+    </div>
+    <p class="hint-line">Calmora is a wellbeing companion. It does not diagnose, treat, or replace professional care. If you are in danger, contact local emergency services now.</p>
+  </div>
+</div>
+
+<!-- ═══ TRANSCRIPT ═══ -->
+<aside id="tx-panel" aria-label="Conversation transcript">
+  <header><h3>Transcript</h3><div style="flex:1"></div><button class="icon-btn" id="tx-close" aria-label="Close transcript"><svg aria-hidden="true"><use href="#i-x"/></svg></button></header>
+  <div id="tx-list" role="log" aria-label="Conversation history"></div>
+  <footer><button class="btn btn-ghost" id="tx-export"><svg aria-hidden="true"><use href="#i-download"/></svg>Export</button><button class="btn danger btn-ghost" id="tx-clear">New chat</button></footer>
+</aside>
+
+<!-- ═══ CALM NOW ═══ -->
+<div id="calmnow" aria-label="Calm me now intervention">
+  <button id="cn-skip">Skip</button>
+  <div id="cn-inner">
+    <div id="cn-orb" aria-hidden="true"></div>
+    <p id="cn-text"></p><p id="cn-sub"></p>
+    <div id="cn-controls"></div>
+  </div>
+</div>
+
+<!-- ═══ SLEEP ═══ -->
+<div id="sleep-mode" aria-label="Sleep mode">
+  <div>
+    <div id="sleep-clock">15:00</div>
+    <div id="sleep-label">sleep session</div>
+    <div id="sleep-sound"><svg aria-hidden="true"><use href="#i-waves"/></svg><span id="sleep-sound-name">Ocean</span></div>
+    <div class="sleep-breath" aria-hidden="true"></div>
+  </div>
+  <div id="sleep-ui">
+    <div id="sleep-chips" aria-label="Soundscape"></div>
+    <div id="sleep-btns">
+      <button class="btn btn-ghost" id="sleep-add5"><svg aria-hidden="true"><use href="#i-clock"/></svg>+5 min</button>
+      <button class="btn btn-amber" id="sleep-end">End session</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CRISIS ═══ -->
+<div id="crisis-card" role="alertdialog" aria-labelledby="crisis-h" aria-describedby="crisis-p">
+  <h4 id="crisis-h">That sounds really heavy. I'm glad you told me.</h4>
+  <p id="crisis-p">I'm a companion, not a crisis service — but a real human can help right now. If you're in immediate danger, please call local emergency services or someone you trust.</p>
+  <div class="c-actions">
+    <a class="c-call" id="crisis-call" href="#" style="display:none"><svg aria-hidden="true"><use href="#i-phone"/></svg><span id="crisis-call-label">Call now</span></a>
+    <a class="c-call" id="crisis-trust" href="#" style="display:none"><svg aria-hidden="true"><use href="#i-phone"/></svg><span id="crisis-trust-label">Call someone you trust</span></a>
+    <a class="c-link" href="https://findahelpline.com" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ext"/></svg>Find a helpline in your country</a>
+    <a class="c-link" href="https://www.crisistextline.org" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ext"/></svg>Crisis Text Line — text HOME to 741741</a>
+  </div>
+  <button class="c-dismiss" id="crisis-dismiss">I'm safe right now — close</button>
+</div>
+
+<div id="toast-region" aria-live="polite"></div>
+<div class="sr-only" aria-live="polite" id="aria-live"></div>
+<noscript><p style="padding:24px;font-family:sans-serif">Calmora needs JavaScript. Please enable it.</p></noscript>
+
+<script>
+(function(){
+'use strict';
+/* ══════════════ utilities ══════════════ */
+var $=function(s,r){return(r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function fmtClock(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),r=s%60;return m+':'+(r<10?'0':'')+r}
+function relTime(ts){var d=Date.now()-ts,m=Math.floor(d/60000);if(m<1)return'just now';if(m<60)return m+' min ago';var h=Math.floor(m/60);if(h<24)return h+' h ago';var dd=new Date(ts);return dd.toLocaleDateString(undefined,{month:'short',day:'numeric'})+(dd.getFullYear()!==new Date().getFullYear()?', '+dd.getFullYear():'')}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var store={
+  get:function(k,f){try{var v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+function download(name,text){var b=new Blob([text],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},4000)}
+
+/* ══════════════ settings & state ══════════════ */
+var S=Object.assign({
+  endpoint:'/api/chat',model:'openrouter/free',apiKey:'',auto:true,speak:true,large:false,
+  rate:1,voice:'',emLabel:'',emNumber:'',trustName:'',trustNumber:'',rm:false,masterVol:0.8
+},store.get('calmora:settings',{}));
+function saveSettings(){store.set('calmora:settings',S)}
+var journal=store.get('calmora:journal',[]);
+var moods=store.get('calmora:moods',[]);
+var stats=Object.assign({talkSec:0,breathSec:0,groundCount:0,calmCount:0,pmrCount:0,sleepMin:0,sndSec:{}},store.get('calmora:stats',{}));
+var history=store.get('calmora:history',[]);
+function persist(){store.set('calmora:journal',journal);store.set('calmora:moods',moods);store.set('calmora:stats',stats);store.set('calmora:history',history.slice(-80))}
+
+/* ══════════════ toast & aria ══════════════ */
+var toastT=null;
+function toast(msg,cls){var r=$('#toast-region');r.innerHTML='';var t=el('div','toast'+(cls?' '+cls:''),esc(msg));r.appendChild(t);requestAnimationFrame(function(){t.classList.add('show')});clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show');setTimeout(function(){t.remove()},350)},3800)}
+function announce(msg){$('#aria-live').textContent='';setTimeout(function(){$('#aria-live').textContent=msg},50)}
+
+/* ══════════════ sheets ══════════════ */
+var sheetStack=[];var lastFocus=null;
+function openSheet(name){
+  var sh=$('#sheet-'+name);if(!sh)return;
+  closeAllSheets(true);lastFocus=document.activeElement;
+  sh.hidden=false;requestAnimationFrame(function(){requestAnimationFrame(function(){sh.classList.add('in')})});
+  sheetStack.push(sh);
+  var f=sh.querySelector('textarea,input,select,button:not([data-close])');if(f)setTimeout(function(){try{f.focus()}catch(e){}},120);
+  if(name==='journal')renderJournal();
+  if(name==='you'){renderInsights();renderCheckinState()}
+  if(name==='ground')groundReset();
+  if(name==='settings'){checkHealth();loadVoices()}
+  if(name==='sounds')renderSoundRows();
+  setDock(name);
+}
+function closeSheet(sh,instant){
+  if(!sh)return;sh.classList.remove('in');
+  var done=function(){sh.hidden=true};
+  if(instant)done();else setTimeout(done,240);
+  sheetStack=sheetStack.filter(function(x){return x!==sh});
+  if(!sheetStack.length){setDock('talk');if(lastFocus&&lastFocus.focus)try{lastFocus.focus()}catch(e){}}
+}
+function closeAllSheets(instant){sheetStack.slice().forEach(function(s){closeSheet(s,instant)})}
+document.addEventListener('click',function(e){
+  var c=e.target.closest('[data-close]');if(c){closeSheet(sheetStack[sheetStack.length-1]);return}
+  var o=e.target.closest('[data-open]');if(o){openSheet(o.getAttribute('data-open'))}
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    if($('#crisis-card').classList.contains('show')){$('#crisis-card').classList.remove('show');return}
+    if($('#sleep-mode').classList.contains('open')){endSleep(true);return}
+    if($('#calmnow').classList.contains('open')){cnStop();return}
+    if($('#tx-panel').classList.contains('open')){$('#tx-panel').classList.remove('open');return}
+    if(sheetStack.length){closeSheet(sheetStack[sheetStack.length-1]);return}
+  }
+  if(e.key==='Tab'&&sheetStack.length){
+    var sh=sheetStack[sheetStack.length-1];
+    var f=$$('button,input,textarea,select,a[href]',sh).filter(function(x){return x.offsetParent!==null});
+    if(!f.length)return;var first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+  }
+  if(e.key===' '&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)&&!sheetStack.length&&!$('#sleep-mode').classList.contains('open')&&!$('#calmnow').classList.contains('open')){
+    e.preventDefault();ttsUnlock();talkToggle();
+  }
+});
+function setDock(name){$$('.dock-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-dock')===name)})}
+$$('.dock-btn').forEach(function(b){b.addEventListener('click',function(){var n=b.getAttribute('data-dock');if(n==='talk')closeAllSheets();else openSheet(n)})});
+
+/* ══════════════ orb & state machine ══════════════ */
+var V={voice:'idle',busy:false,byVoice:false};
+var HEADINGS={idle:'What&rsquo;s on your <em>mind</em>?',listening:'Go ahead — I&rsquo;m <em>listening</em>.',thinking:'Let me sit with that <em>for a moment</em>&hellip;',speaking:''};
+var LABELS={idle:'tap to talk · type if you prefer',listening:'listening…',thinking:'thinking…',speaking:'calmora'};
+function setVoice(state){
+  V.voice=state;
+  var cls='state-'+state;document.body.className=document.body.className.replace(/state-\w+/,'')+' '+cls;
+  $('#state-label').textContent=LABELS[state];
+  var h=$('#heading');h.style.opacity='0';
+  setTimeout(function(){h.innerHTML=HEADINGS[state]||'&nbsp;';h.style.visibility=state==='speaking'?'hidden':'visible';h.style.opacity='1'},200);
+  $('#talk-cta').classList.toggle('live',state==='listening');
+  $('#talk-cta-label').textContent=state==='listening'?'Listening — tap to stop':(state==='thinking'?'Thinking…':(state==='speaking'?'Speaking…':'Talk to Calmora'));
+  $('#btn-mic').classList.toggle('live',state==='listening');
+  announce(LABELS[state]);
+}
+function caption(kind,text){$('#cap-'+kind).textContent=text}
+
+/* particles */
+(function(){
+  var p=$('#orb-particles');if(!p)return;
+  for(var i=0;i<18;i++){var s=document.createElement('i');var sz=(Math.random()*2.4+1.4).toFixed(1);
+    s.style.setProperty('--s',sz+'px');s.style.setProperty('--r',(Math.random()*40+112).toFixed(0)+'px');
+    s.style.setProperty('--a0',(Math.random()*360).toFixed(0)+'deg');s.style.setProperty('--d',(Math.random()*10+8).toFixed(1)+'s');
+    s.style.setProperty('--tw',(Math.random()*3+2.2).toFixed(1)+'s');
+    s.style.setProperty('--pc',Math.random()>.5?'rgba(147,214,198,.8)':'rgba(233,192,140,.75)');
+    p.appendChild(s)}
+  var d=$('#bg-dust');
+  for(var j=0;j<20;j++){var m=document.createElement('i');
+    m.style.left=(Math.random()*100)+'%';m.style.top=(Math.random()*100)+'%';
+    m.style.animationDuration=(Math.random()*15+9)+'s';m.style.animationDelay=(-Math.random()*22)+'s';
+    m.style.width=m.style.height=(Math.random()*2+1.4)+'px';d.appendChild(m)}
+})();
+
+/* ══════════════ Web Audio engine ══════════════ */
+var AX={ctx:null,master:null,ready:false};
+function axEnsure(){
+  if(AX.ready){if(AX.ctx.state==='suspended')AX.ctx.resume();return true}
+  var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
+  try{AX.ctx=new AC();AX.master=AX.ctx.createGain();AX.master.gain.value=S.masterVol!=null?S.masterVol:0.8;
+    var comp=AX.ctx.createDynamicsCompressor();comp.threshold.value=-18;comp.knee.value=24;comp.ratio.value=6;
+    AX.master.connect(comp);comp.connect(AX.ctx.destination);AX.ready=true;AX.ctx.resume();return true}catch(e){return false}
+}
+var noiseCache={};
+function noiseBuf(type){
+  if(noiseCache[type])return noiseCache[type];
+  var c=AX.ctx,len=c.sampleRate*4,b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0),i;
+  if(type==='white'){for(i=0;i<len;i++)d[i]=Math.random()*2-1}
+  else if(type==='brown'){var last=0;for(i=0;i<len;i++){var w=Math.random()*2-1;last=(last+0.02*w)/1.02;d[i]=last*3.5}}
+  else{var b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;for(i=0;i<len;i++){var ww=Math.random()*2-1;b0=0.99886*b0+ww*0.0555179;b1=0.99332*b1+ww*0.0750759;b2=0.969*b2+ww*0.153852;b3=0.8665*b3+ww*0.3104856;b4=0.55*b4+ww*0.5329522;b5=-0.7616*b5-ww*0.016898;d[i]=(b0+b1+b2+b3+b4+b5+b6+ww*0.5362)*0.11;b6=ww*0.115926}}
+  noiseCache[type]=b;return b;
+}
+function loopSrc(type){var s=AX.ctx.createBufferSource();s.buffer=noiseBuf(type);s.loop=true;s.start();return s}
+
+/* Soundscape layers */
+var LAYERS=[
+  {id:'rain',name:'Rain',desc:'Steady rainfall on leaves',icon:'i-drop'},
+  {id:'ocean',name:'Ocean',desc:'Slow swells on a dark shore',icon:'i-waves'},
+  {id:'forest',name:'Forest',desc:'Morning birdsong through trees',icon:'i-tree'},
+  {id:'brown',name:'Brown noise',desc:'A deep, even hush',icon:'i-noise'},
+  {id:'fire',name:'Fireplace',desc:'Crackling hearth and embers',icon:'i-flame'},
+  {id:'night',name:'Night crickets',desc:'Warm summer darkness',icon:'i-moon'},
+  {id:'cave',name:'Deep cave',desc:'Resonant water in stone',icon:'i-music'}
+];
+var mix=Object.assign({master:0.8,layers:{}},store.get('calmora:mix',{}));
+function saveMix(){store.set('calmora:mix',mix)}
+function layerMix(id){return mix.layers[id]||(mix.layers[id]={vol:0.7,int:0.6})}
+
+function buildLayer(def){
+  var L={def:def,playing:false,nodes:null,timers:[],out:null,lfos:[]};
+  L.ensure=function(){
+    var c=AX.ctx;if(L.out&&L.out.context===c)return;
+    L.out=c.createGain();L.out.gain.value=0;L.out.connect(AX.master);
+    var m=layerMix(def.id),g;
+    if(def.id==='rain'){
+      var src=loopSrc('white'),hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=700;
+      var lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=7800;
+      g=c.createGain();g.gain.value=0.28;src.connect(hp);hp.connect(lp);lp.connect(g);g.connect(L.out);
+      L.timers.push(setInterval(function(){if(!L.playing)return;if(Math.random()>0.55+m.int*0.4)return;
+        var t=c.currentTime,o=c.createOscillator(),og=c.createGain();
+        o.frequency.value=1800+Math.random()*2600;o.type='sine';
+        og.gain.setValueAtTime(0.0001,t);og.gain.exponentialRampToValueAtTime(0.04+m.int*0.04,t+0.004);og.gain.exponentialRampToValueAtTime(0.0001,t+0.055+Math.random()*0.05);
+        o.connect(og);og.connect(L.out);o.start(t);o.stop(t+0.14)},80));
+    }else if(def.id==='ocean'){
+      var s1=loopSrc('brown'),f1=c.createBiquadFilter();f1.type='lowpass';f1.frequency.value=450;
+      g=c.createGain();g.gain.value=0.48;s1.connect(f1);f1.connect(g);g.connect(L.out);
+      var lfo=c.createOscillator();lfo.frequency.value=0.07;var lg=c.createGain();lg.gain.value=0.22+m.int*0.18;lfo.connect(lg);lg.connect(g.gain);lfo.start();
+      var lfo2=c.createOscillator();lfo2.frequency.value=0.041;var lg2=c.createGain();lg2.gain.value=0.13;lfo2.connect(lg2);lg2.connect(g.gain);lfo2.start();
+      L.lfos=[lfo,lfo2];
+    }else if(def.id==='forest'){
+      var ws=loopSrc('pink'),bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1600;bp.Q.value=0.55;
+      g=c.createGain();g.gain.value=0.09+m.int*0.04;ws.connect(bp);bp.connect(g);g.connect(L.out);
+      var wl=c.createOscillator();wl.frequency.value=0.12;var wlg=c.createGain();wlg.gain.value=0.032;wl.connect(wlg);wlg.connect(g.gain);wl.start();L.lfos=[wl];
+      L.timers.push(setInterval(function(){if(!L.playing)return;if(Math.random()>0.14+m.int*0.28)return;
+        var t=c.currentTime+0.02,base=2200+Math.random()*1400,notes=2+Math.floor(Math.random()*3);
+        for(var k=0;k<notes;k++){var o=c.createOscillator(),og=c.createGain(),st=t+k*0.15;
+          o.type='triangle';o.frequency.setValueAtTime(base*(0.9+Math.random()*0.32),st);
+          o.frequency.exponentialRampToValueAtTime(base*(1.12+Math.random()*0.28),st+0.07);
+          og.gain.setValueAtTime(0.0001,st);og.gain.exponentialRampToValueAtTime(0.03+m.int*0.02,st+0.018);og.gain.exponentialRampToValueAtTime(0.0001,st+0.12);
+          o.connect(og);og.connect(L.out);o.start(st);o.stop(st+0.15)}},650));
+    }else if(def.id==='brown'){
+      var bs=loopSrc('brown'),bf=c.createBiquadFilter();bf.type='lowpass';bf.frequency.value=360+m.int*200;
+      g=c.createGain();g.gain.value=0.52;bs.connect(bf);bf.connect(g);g.connect(L.out);
+    }else if(def.id==='fire'){
+      var fs=loopSrc('brown'),ff=c.createBiquadFilter();ff.type='lowpass';ff.frequency.value=280;
+      g=c.createGain();g.gain.value=0.38;fs.connect(ff);ff.connect(g);g.connect(L.out);
+      L.timers.push(setInterval(function(){if(!L.playing)return;if(Math.random()>0.28+m.int*0.42)return;
+        var t=c.currentTime,dur=0.01+Math.random()*0.038;
+        var nb=c.createBuffer(1,Math.ceil(c.sampleRate*dur),c.sampleRate),nd=nb.getChannelData(0);
+        for(var q=0;q<nd.length;q++)nd[q]=(Math.random()*2-1)*(1-q/nd.length);
+        var ns=c.createBufferSource();ns.buffer=nb;
+        var hf=c.createBiquadFilter();hf.type='highpass';hf.frequency.value=1400+Math.random()*1400;
+        var ng=c.createGain();ng.gain.setValueAtTime(0.09+Math.random()*0.09*(0.5+m.int),t);ng.gain.exponentialRampToValueAtTime(0.0001,t+dur+0.02);
+        ns.connect(hf);hf.connect(ng);ng.connect(L.out);ns.start(t);
+        if(Math.random()<0.1){var po=c.createOscillator(),pg=c.createGain();po.frequency.value=88+Math.random()*64;pg.gain.setValueAtTime(0.08,t);pg.gain.exponentialRampToValueAtTime(0.0001,t+0.09);po.connect(pg);pg.connect(L.out);po.start(t);po.stop(t+0.1)}},65));
+    }else if(def.id==='night'){
+      g=c.createGain();g.gain.value=0.22;g.connect(L.out);
+      L.timers.push(setInterval(function(){if(!L.playing)return;
+        if(Math.random()>0.65)return;
+        var t=c.currentTime+Math.random()*0.05;
+        var freq=3800+Math.random()*800,dur=0.06+Math.random()*0.08;
+        var o=c.createOscillator(),og=c.createGain();o.type='sine';o.frequency.value=freq;
+        og.gain.setValueAtTime(0.0001,t);og.gain.linearRampToValueAtTime((0.04+m.int*0.04)*Math.random(),t+dur/2);og.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+        o.connect(og);og.connect(L.out);o.start(t);o.stop(t+dur+0.02);
+        if(Math.random()<0.3){var o2=c.createOscillator(),og2=c.createGain();o2.type='sine';o2.frequency.value=freq*1.5;
+          og2.gain.setValueAtTime(0.0001,t+0.01);og2.gain.linearRampToValueAtTime(0.02+m.int*0.02,t+dur/2+0.01);og2.gain.exponentialRampToValueAtTime(0.0001,t+dur+0.01);
+          o2.connect(og2);og2.connect(L.out);o2.start(t+0.01);o2.stop(t+dur+0.04)}},120));
+    }else if(def.id==='cave'){
+      var cs=loopSrc('brown'),cf=c.createBiquadFilter();cf.type='lowpass';cf.frequency.value=160;
+      g=c.createGain();g.gain.value=0.26;cs.connect(cf);cf.connect(g);g.connect(L.out);
+      var rv=c.createConvolver();rv.normalize=true;
+      var irLen=c.sampleRate*2.4,ir=c.createBuffer(2,irLen,c.sampleRate);
+      [0,1].forEach(function(ch){var d2=ir.getChannelData(ch);for(var i=0;i<irLen;i++)d2[i]=(Math.random()*2-1)*Math.pow(1-i/irLen,1.6)});
+      rv.buffer=ir;var rg=c.createGain();rg.gain.value=0.6+m.int*0.25;g.connect(rv);rv.connect(rg);rg.connect(L.out);
+      L.timers.push(setInterval(function(){if(!L.playing||Math.random()>0.12)return;
+        var t=c.currentTime,drop=c.createOscillator(),dg=c.createGain();
+        drop.frequency.setValueAtTime(900+Math.random()*200,t);drop.frequency.exponentialRampToValueAtTime(200+Math.random()*100,t+0.22);
+        dg.gain.setValueAtTime(0.0001,t);dg.gain.linearRampToValueAtTime(0.08+m.int*0.06,t+0.01);dg.gain.exponentialRampToValueAtTime(0.0001,t+0.25);
+        drop.connect(dg);dg.connect(rv);dg.connect(L.out);drop.start(t);drop.stop(t+0.28)},1800));
+    }
+  };
+  L.start=function(){if(!axEnsure())return;L.ensure();AX.ctx.resume();L.playing=true;
+    var m=layerMix(def.id),t=AX.ctx.currentTime;
+    L.out.gain.cancelScheduledValues(t);L.out.gain.setValueAtTime(L.out.gain.value,t);
+    L.out.gain.linearRampToValueAtTime(m.vol*0.88+0.05,t+0.9)};
+  L.stop=function(){if(!L.out)return;L.playing=false;
+    var t=AX.ctx.currentTime;L.out.gain.cancelScheduledValues(t);L.out.gain.setValueAtTime(L.out.gain.value,t);
+    L.out.gain.linearRampToValueAtTime(0.0001,t+0.5)};
+  L.setVol=function(v){layerMix(def.id).vol=v;saveMix();if(L.playing&&L.out){var t=AX.ctx.currentTime;L.out.gain.cancelScheduledValues(t);L.out.gain.linearRampToValueAtTime(v*0.88+0.05,t+0.15)}};
+  L.setInt=function(v){layerMix(def.id).int=v;saveMix()};
+  return L;
+}
+var engines={};LAYERS.forEach(function(d){engines[d.id]=buildLayer(d)});
+function anyPlaying(){return LAYERS.some(function(d){return engines[d.id].playing})}
+function playingNames(){return LAYERS.filter(function(d){return engines[d.id].playing}).map(function(d){return d.name})}
+function stopAllLayers(){LAYERS.forEach(function(d){engines[d.id].stop()});renderSoundRows()}
+function applyMaster(v){mix.master=v;saveMix();if(AX.master)AX.master.gain.value=v}
+setInterval(function(){if(!anyPlaying()&&!FREQ.active)return;
+  LAYERS.forEach(function(d){if(engines[d.id].playing)stats.sndSec[d.id]=(stats.sndSec[d.id]||0)+5});persist()},5000);
+
+/* ══════════════ FREQUENCY LAB (binaural beats + solfeggio) ══════════════ */
+var FREQ_PRESETS=[
+  // binaural beats (bb type)
+  {id:'delta',name:'Delta',hz:2,cat:'bb',desc:'Deep sleep & healing (0.5–4 Hz)',note:'Best for sleep and deep restoration. Keep volume low.'},
+  {id:'theta',name:'Theta',hz:6,cat:'bb',desc:'Meditation & creativity (4–8 Hz)',note:'Profound calm, visualization, light meditation state.'},
+  {id:'alpha',name:'Alpha',hz:10,cat:'bb',desc:'Relaxed focus (8–13 Hz)',note:'Most studied for anxiety reduction. Calm alertness.'},
+  {id:'smr',name:'SMR',hz:14,cat:'bb',desc:'Calm focus / SMR (12–15 Hz)',note:'Sensorimotor rhythm — alert without tension.'},
+  {id:'schumann',name:'Schumann',hz:7.83,cat:'sc',desc:'Earth resonance 7.83 Hz',note:'Grounding and nervous system regulation.'},
+  // solfeggio (sf type)
+  {id:'s174',name:'174 Hz',hz:174,cat:'sf',desc:'Solfeggio — foundation & relief',note:'Traditionally associated with grounding and pain relief.'},
+  {id:'s285',name:'285 Hz',hz:285,cat:'sf',desc:'Solfeggio — tissue restoration',note:'Cellular healing and energetic restoration tradition.'},
+  {id:'s396',name:'396 Hz',hz:396,cat:'sf',desc:'Solfeggio — releasing fear & guilt',note:'Liberating. Good paired with theta beat for emotional processing.'},
+  {id:'s417',name:'417 Hz',hz:417,cat:'sf',desc:'Solfeggio — change & renewal',note:'Clearing stuck patterns and facilitating positive change.'},
+  {id:'s528',name:'528 Hz',hz:528,cat:'sf',desc:'Solfeggio — love frequency',note:'Most studied solfeggio tone. Cortisol reduction in studies.'},
+  {id:'s639',name:'639 Hz',hz:639,cat:'sf',desc:'Solfeggio — relationships',note:'Connection, empathy, communication and heart coherence.'},
+  {id:'s741',name:'741 Hz',hz:741,cat:'sf',desc:'Solfeggio — intuition & clarity',note:'Mental clarity, problem-solving and self-expression.'},
+  {id:'s852',name:'852 Hz',hz:852,cat:'sf',desc:'Solfeggio — spiritual order',note:'Intuition, higher awareness, returning to spiritual alignment.'},
+  {id:'s963',name:'963 Hz',hz:963,cat:'sf',desc:'Solfeggio — divine connection',note:'Crown activation and elevated consciousness tradition.'}
+];
+var FREQ={active:false,nodes:null,current:null,vol:0.3,carrier:200};
+function freqStop(){
+  if(FREQ.nodes){
+    ['oscL','oscR','oscDrone','gainL','gainR','gainDrone','merger','splitter','lfo','lfoGain'].forEach(function(k){
+      try{if(FREQ.nodes[k])FREQ.nodes[k].disconnect()}catch(e){}
+      try{if(FREQ.nodes[k]&&FREQ.nodes[k].stop)FREQ.nodes[k].stop()}catch(e){}
+    });FREQ.nodes=null}
+  FREQ.active=false;FREQ.current=null;
+}
+function freqPlay(preset){
+  if(!axEnsure()){toast('Audio unavailable in this browser.',true);return}
+  freqStop();FREQ.current=preset.id;FREQ.active=true;
+  var c=AX.ctx;
+  if(preset.cat==='bb'||preset.cat==='sc'){
+    // True binaural beats: L=carrier, R=carrier+beat, merged via ChannelMerger
+    var splitter=c.createChannelSplitter(2);var merger=c.createChannelMerger(2);
+    var carrier=FREQ.carrier;var beat=preset.hz;
+    var oscL=c.createOscillator(),oscR=c.createOscillator();
+    oscL.type='sine';oscR.type='sine';oscL.frequency.value=carrier;oscR.frequency.value=carrier+beat;
+    var gL=c.createGain(),gR=c.createGain();gL.gain.value=0.0001;gR.gain.value=0.0001;
+    oscL.connect(gL);oscR.connect(gR);
+    gL.connect(merger,0,0);gR.connect(merger,0,1);
+    var masterGain=c.createGain();masterGain.gain.value=FREQ.vol*0.8;merger.connect(masterGain);masterGain.connect(AX.master);
+    oscL.start();oscR.start();
+    var t=c.currentTime;gL.gain.linearRampToValueAtTime(0.5,t+0.8);gR.gain.linearRampToValueAtTime(0.5,t+0.8);
+    FREQ.nodes={oscL:oscL,oscR:oscR,gainL:gL,gainR:gR,merger:merger,masterGain:masterGain};
+  }else{
+    // Solfeggio: pure sine drone with gentle AM
+    var osc=c.createOscillator();osc.type='sine';osc.frequency.value=preset.hz;
+    var gainDrone=c.createGain();gainDrone.gain.value=0.0001;osc.connect(gainDrone);
+    var lfo=c.createOscillator();lfo.frequency.value=0.12;lfo.type='sine';
+    var lfoGain=c.createGain();lfoGain.gain.value=0.04;lfo.connect(lfoGain);lfoGain.connect(gainDrone.gain);
+    var masterGain=c.createGain();masterGain.gain.value=FREQ.vol*0.7;gainDrone.connect(masterGain);masterGain.connect(AX.master);
+    osc.start();lfo.start();var t2=c.currentTime;gainDrone.gain.linearRampToValueAtTime(0.55,t2+1.2);
+    FREQ.nodes={oscDrone:osc,gainDrone:gainDrone,lfo:lfo,lfoGain:lfoGain,masterGain:masterGain};
+  }
+}
+function freqSetVol(v){FREQ.vol=v;if(FREQ.nodes&&FREQ.nodes.masterGain)FREQ.nodes.masterGain.gain.value=v*(FREQ.current&&FREQ_PRESETS.find(function(p){return p.id===FREQ.current&&p.cat!=='sf'})?0.8:0.7)}
+function freqSetCarrier(hz){FREQ.carrier=hz;if(FREQ.nodes&&FREQ.nodes.oscL)FREQ.nodes.oscL.frequency.value=hz;if(FREQ.nodes&&FREQ.nodes.oscR&&FREQ.current){var p=FREQ_PRESETS.find(function(p){return p.id===FREQ.current});if(p)FREQ.nodes.oscR.frequency.value=hz+p.hz}}
+function renderFreqLab(){
+  var grid=$('#freq-grid');grid.innerHTML='';
+  FREQ_PRESETS.forEach(function(p){
+    var card=el('div','freq-card '+(p.cat||'')+(FREQ.current===p.id?' on':''));
+    card.innerHTML='<span class="fc-hz">'+p.hz+' Hz</span><span class="fc-name">'+esc(p.name)+'</span><span class="fc-desc">'+esc(p.desc)+'</span>';
+    card.addEventListener('click',function(){
+      if(FREQ.current===p.id){freqStop();renderFreqLab();$('#freq-note').textContent='Select a preset. Use headphones for binaural beats.';return}
+      freqPlay(p);renderFreqLab();
+      $('#freq-note').textContent=p.note+' '+((p.cat==='bb'||p.cat==='sc')?' (Use headphones for full effect)':'');
+    });
+    grid.appendChild(card);
+  });
+  $('#freq-vol').value=Math.round(FREQ.vol*100);fillRange($('#freq-vol'));
+  $('#freq-carrier').value=FREQ.carrier;$('#freq-carrier-label').textContent=FREQ.carrier+' Hz';
+}
+$('#freq-vol').addEventListener('input',function(){freqSetVol(this.value/100);fillRange(this)});
+$('#freq-carrier').addEventListener('input',function(){FREQ.carrier=+this.value;$('#freq-carrier-label').textContent=this.value+' Hz';freqSetCarrier(+this.value);fillRange(this)});
+
+/* sound sheet UI */
+function fillRange(r){var p=(r.value-r.min)/(r.max-r.min)*100;r.style.setProperty('--fill',p+'%')}
+function renderSoundRows(){
+  var host=$('#snd-list');host.innerHTML='';
+  LAYERS.forEach(function(d){
+    var E=engines[d.id],m=layerMix(d.id);
+    var row=el('div','mixer-row'+(E.playing?' on':''));row.id='snd-row-'+d.id;
+    row.innerHTML=
+      '<button class="m-ic" aria-label="'+(E.playing?'Stop':'Play')+' '+esc(d.name)+'" aria-pressed="'+E.playing+'"><svg aria-hidden="true"><use href="#'+(E.playing?'i-pause':'i-play')+'"/></svg></button>'+
+      '<div class="m-top" role="button" tabindex="0" aria-label="Toggle '+esc(d.name)+'"><b>'+esc(d.name)+'</b><small>'+esc(d.desc)+'</small><span class="m-play">'+(E.playing?'playing':'off')+'</span></div>'+
+      '<div class="m-sliders"><label>Vol</label><input type="range" min="0" max="100" value="'+Math.round(m.vol*100)+'" aria-label="'+esc(d.name)+' volume"><label>Depth</label><input type="range" min="0" max="100" value="'+Math.round(m.int*100)+'" aria-label="'+esc(d.name)+' depth"></div>';
+    var ic=row.querySelector('.m-ic'),top=row.querySelector('.m-top'),rs=row.querySelectorAll('input[type=range]');
+    function toggle(){if(E.playing){E.stop();renderSoundRows()}else{E.start();renderSoundRows()}}
+    ic.addEventListener('click',toggle);top.addEventListener('click',toggle);
+    top.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
+    rs[0].addEventListener('input',function(){E.setVol(rs[0].value/100);fillRange(rs[0])});
+    rs[1].addEventListener('input',function(){E.setInt(rs[1].value/100);fillRange(rs[1])});
+    rs.forEach(fillRange);host.appendChild(row);
+  });
+  renderFreqLab();
+}
+$('#snd-master').value=Math.round(mix.master*100);fillRange($('#snd-master'));
+$('#snd-master').addEventListener('input',function(){applyMaster(this.value/100);fillRange(this)});
+$('#snd-stopall').addEventListener('click',function(){stopAllLayers();freqStop();renderSoundRows();renderFreqLab();toast('Silence. Also nice.')});
+
+/* ══════════════ TTS & voice ══════════════ */
+var SRCtor=window.SpeechRecognition||window.webkitSpeechRecognition;
+var SR={ok:!!SRCtor,rec:null,stream:null,analyser:null,raf:0};
+var TTS={ok:'speechSynthesis' in window,voice:null,voices:[],pending:0,keep:0,onIdle:null,safe:0};
+function loadVoices(){
+  if(!TTS.ok)return;TTS.voices=speechSynthesis.getVoices()||[];
+  var sel=$('#set-voice');sel.innerHTML='';
+  var en=TTS.voices.filter(function(v){return /^en/i.test(v.lang)});
+  var list=en.length?en:TTS.voices;if(!list.length){sel.innerHTML='<option>System default</option>';return}
+  list.forEach(function(v){var o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)});
+  var pref=['Samantha','Serena','Karen','Moira','Google UK English Female','Google US English','Natural','Daniel'];
+  var chosen=list.find(function(v){return v.name===S.voice})||list.find(function(v){return pref.some(function(p){return v.name.indexOf(p)>-1})})||list[0];
+  TTS.voice=chosen;if(sel)sel.value=chosen.name;
+}
+if(TTS.ok){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function sentenceSplit(t){return t.match(/[^.!?…\n]+[.!?…]+["')\]]*|[^.!?…\n]+$/g)||[t]}
+function armIdleSafe(){clearTimeout(TTS.safe);TTS.safe=setTimeout(function(){if(TTS.pending>0)TTS.pending=0;if(TTS.onIdle){var f=TTS.onIdle;TTS.onIdle=null;f()}},60000)}
+function speak(text,onAllDone){
+  if(!TTS.ok||!S.speak||!text.trim()){if(onAllDone)onAllDone();return}
+  var parts=sentenceSplit(text).map(function(s){return s.trim()}).filter(Boolean);
+  if(!parts.length){if(onAllDone)onAllDone();return}
+  if(onAllDone)TTS.onIdle=onAllDone;TTS.pending+=parts.length;
+  try{speechSynthesis.resume()}catch(e){}
+  parts.forEach(function(p){
+    var u=new SpeechSynthesisUtterance(p);if(TTS.voice)u.voice=TTS.voice;u.rate=parseFloat(S.rate)||1;u.pitch=1;u.volume=1;
+    var fin=function(){TTS.pending=Math.max(0,TTS.pending-1);if(TTS.pending===0&&TTS.onIdle){clearTimeout(TTS.safe);var f=TTS.onIdle;TTS.onIdle=null;f()}};
+    u.onend=fin;u.onerror=fin;speechSynthesis.speak(u);
+  });
+  clearInterval(TTS.keep);TTS.keep=setInterval(function(){try{if(speechSynthesis.speaking)speechSynthesis.resume()}catch(e){}},10000);
+  armIdleSafe();
+}
+function stopSpeaking(){if(!TTS.ok)return;try{TTS.pending=0;TTS.onIdle=null;clearTimeout(TTS.safe);clearInterval(TTS.keep);speechSynthesis.cancel()}catch(e){}}
+var ttsUnlocked=false;
+function ttsUnlock(){if(ttsUnlocked||!TTS.ok)return;ttsUnlocked=true;try{var u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
+document.addEventListener('pointerdown',ttsUnlock,{once:true});
+
+/* mic analyser */
+function micLevelTick(){
+  if(V.voice!=='listening'||!SR.analyser){$('#orb-core').style.setProperty('--mic',0);return}
+  var d=new Uint8Array(SR.analyser.fftSize);SR.analyser.getByteTimeDomainData(d);
+  var sum=0;for(var i=0;i<d.length;i++){var v=(d[i]-128)/128;sum+=v*v}
+  var rms=Math.sqrt(sum/d.length);$('#orb-core').style.setProperty('--mic',clamp(rms*3.5,0,1).toFixed(3));
+  SR.raf=requestAnimationFrame(micLevelTick);
+}
+function stopAnalyser(){cancelAnimationFrame(SR.raf);$('#orb-core').style.setProperty('--mic',0);
+  if(SR.stream){SR.stream.getTracks().forEach(function(t){t.stop()});SR.stream=null}SR.analyser=null}
+function startAnalyser(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!axEnsure())return;
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
+    if(V.voice!=='listening'){st.getTracks().forEach(function(t){t.stop()});return}
+    SR.stream=st;var src=AX.ctx.createMediaStreamSource(st);
+    SR.analyser=AX.ctx.createAnalyser();SR.analyser.fftSize=512;src.connect(SR.analyser);micLevelTick();
+  }).catch(function(){});
+}
+
+var recFinal='',recRestartT=0;
+function startListening(byVoice){
+  if(V.voice==='listening'){commitFromVoice();return}
+  if(!SR.ok){toast('Voice input isn\u2019t supported here — the text bar works great.',true);$('#input-text').focus();return}
+  stopSpeaking();caption('ai','');caption('user','');
+  recFinal='';V.byVoice=!!byVoice;
+  var rec;try{rec=new SRCtor()}catch(e){toast('Couldn\u2019t start the microphone.',true);return}
+  SR.rec=rec;rec.continuous=true;rec.interimResults=true;rec.lang='en-US';rec.maxAlternatives=1;
+  rec.onresult=function(e){
+    var interim='';for(var i=e.resultIndex;i<e.results.length;i++){var r=e.results[i];if(r.isFinal)recFinal+=r[0].transcript;else interim+=r[0].transcript}
+    caption('user',(recFinal+' '+interim).trim());
+    if(recFinal.trim()){clearTimeout(recRestartT);recRestartT=setTimeout(function(){if(V.voice==='listening'&&recFinal.trim())commitFromVoice()},950)}
+  };
+  rec.onerror=function(e){
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){setVoice('idle');stopAnalyser();toast('Microphone access was blocked — check browser settings, or just type.',true)}
+    else if(e.error==='audio-capture'){setVoice('idle');stopAnalyser();toast('No microphone found — the text bar is right there.',true)}
+  };
+  rec.onend=function(){if(V.voice==='listening'){try{rec.start()}catch(err){}}};
+  try{rec.start()}catch(e){}
+  setVoice('listening');startAnalyser();
+}
+function commitFromVoice(){
+  clearTimeout(recRestartT);
+  var text=(recFinal||$('#cap-user').textContent||'').trim();
+  if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();
+  if(!text){setVoice('idle');caption('user','');return}
+  caption('user','');userTurn(text);
+}
+function talkToggle(){
+  if(V.voice==='listening'){commitFromVoice()}
+  else if(V.busy){toast('One moment — Calmora is still answering.')}
+  else startListening(true);
+}
+$('#talk-cta').addEventListener('click',function(){
+  if(V.voice==='thinking'||V.voice==='speaking'){stopSpeaking();TTS.pending=0;if(turnCancel){try{turnCancel()}catch(e){}}turnCancel=null;finishTurn(true);return}
+  talkToggle();
+});
+$('#btn-mic').addEventListener('click',talkToggle);
+
+/* ══════════════ safety ══════════════ */
+var CRISIS_RE=/(suicid|kill\s*(my|me\b)|end\s*(my life|it all|myself)|take\s*my\s*(own\s*)?life|don'?t\s*want\s*to\s*(live|exist|be here)|no\s*reason\s*to\s*(live|go on)|better\s*off\s*(dead|without me)|hurt(ing)?\s*myself|self[-\s]?harm|cut(ting)?\s*myself|overdose|want\s*to\s*die|wish\s*i\s*(was|were)\s*dead|no\s*point\s*(in\s*)?living|can'?t\s*go\s*on|in\s*(immediate\s*)?danger)/i;
+var crisisShownAt=0;
+function crisisCheck(text){
+  if(!CRISIS_RE.test(text))return false;
+  if(Date.now()-crisisShownAt<45000)return true;
+  crisisShownAt=Date.now();
+  var call=$('#crisis-call'),trust=$('#crisis-trust');
+  if(S.emNumber){call.style.display='flex';call.href='tel:'+S.emNumber.replace(/[^\d+]/g,'');$('#crisis-call-label').textContent='Call '+(S.emLabel||'emergency services')+' now'}
+  else{call.style.display='none'}
+  if(S.trustNumber){trust.style.display='flex';trust.href='tel:'+S.trustNumber.replace(/[^\d+]/g,'');$('#crisis-trust-label').textContent='Call '+(S.trustName||'someone you trust')}
+  else{trust.style.display='none'}
+  $('#crisis-card').classList.add('show');
+  announce('Safety information shown. If you are in danger, please contact local emergency services now.');
+  return true;
+}
+$('#crisis-dismiss').addEventListener('click',function(){$('#crisis-card').classList.remove('show')});
+
+/* ══════════════ AI provider system ══════════════ */
+
+/* ─── Comprehensive clinical-grade system prompt ─── */
+var SYSTEM_PROMPT=`You are Calmora — a warm, emotionally intelligent, voice-first wellbeing companion.
+
+━━ VOICE PRODUCT — CRITICAL FORMATTING RULE ━━
+ALWAYS respond in 1 to 4 short, natural spoken sentences. NEVER more. No lists, no bullet points, no markdown, no headings, no asterisks, no clinical labels. Plain conversational speech only. The user will hear you, not read you.
+
+━━ THERAPEUTIC APPROACH ━━
+You are trained in and naturally weave in techniques from:
+
+• CBT (Cognitive Behavioral Therapy): Gently identify cognitive distortions (catastrophising, black-and-white thinking, mind-reading, personalisation). Offer thought reframing: "I wonder if there's another way to look at that?" Never force it. Plant a seed.
+
+• DBT (Dialectical Behavior Therapy): Use distress tolerance skills naturally. Validate first — "That makes complete sense." Use TIPP (Temperature, Intense exercise, Paced breathing, Paired muscle relaxation) when distress is acute. Wise Mind: help them find the space between emotion mind and rational mind.
+
+• ACT (Acceptance & Commitment Therapy): Don't fight the feeling. Name it with defusion: "You're having the thought that…" Help them connect to values: "What matters most to you in moments like this?" Focus on what they can do, not what they can't control.
+
+• Motivational Interviewing: Use open questions. Reflect back. Affirm their strengths. "It sounds like part of you wants to…" Never push. Ambivalence is valid.
+
+• Affect labeling: Naming feelings activates the prefrontal cortex and reduces amygdala response. Ask: "What's the feeling underneath that?"
+
+• Mindful awareness: Brief body check-ins. "Where do you feel that in your body right now?" Ground them in the present without making it weird.
+
+━━ CONVERSATION STYLE ━━
+• Warm, unhurried, honest, and never fake-cheerful
+• Reflect what you hear before exploring further
+• Ask at most ONE gentle question per turn — create space, not interrogation
+• Validate first, always: acknowledge the feeling before anything else
+• When appropriate, softly suggest Calmora's built-in tools: slow breathing, the 5-4-3-2-1 grounding exercise, rain or ocean soundscapes, the journal, the PMR exercise, or sleep mode
+• Notice patterns across the conversation: if someone mentions the same theme twice, gently reflect it
+• Use the person's exact words back to them when possible — it feels seen
+• Silence and brevity are powerful. A two-sentence response can be more healing than a paragraph.
+
+━━ SESSION RHYTHM ━━
+• If this is the first message, open with genuine curiosity and warmth
+• Mid-conversation: stay with their thread, don't jump topics
+• When natural, offer a small closing insight or invitation: "Is there one small thing that might feel manageable tonight?"
+
+━━ ABSOLUTE BOUNDARIES ━━
+• You are a companion — never a therapist, doctor, or crisis service. If asked directly, say warmly: "I'm Calmora, a wellbeing companion — not a therapist. But I'm genuinely here to listen."
+• NEVER diagnose mental illness or label conditions
+• NEVER give medical advice or suggest medication changes
+• NEVER encourage dependency on Calmora over human connection
+• NEVER provide information that could be used to harm self or others
+• NEVER be preachy, lecture, or shame
+• If someone shares something very heavy: slow down, acknowledge the weight, don't rush to fix`;
+
+var CRISIS_ADDENDUM=`
+
+━━ SAFETY CONTEXT — HANDLE WITH MAXIMUM CARE ━━
+The system has detected possible crisis language. This person may be in significant distress or danger.
+
+Respond with: (1) Calm, steady presence — no alarm (2) Genuine acknowledgment of how much courage it takes to say this (3) Clear, warm encouragement to reach a real human right now — local emergency services, a trusted person, or a crisis line (4) Do NOT discuss methods, means, or provide any harmful information (5) Two to three sentences maximum — calm, kind, clear. Do not overwhelm.`;
+
+function histMessages(){return history.filter(function(m){return m.role==='user'||m.role==='assistant'}).slice(-20).map(function(m){return{role:m.role==='assistant'?'assistant':'user',content:m.text}})}
+function moodContext(){
+  if(!moods.length)return'';
+  var recent=moods.slice(-5);var avg=(recent.reduce(function(s,m){return s+m.level},0)/recent.length).toFixed(1);
+  var tags=[];recent.forEach(function(m){(m.tags||[]).forEach(function(t){if(tags.indexOf(t)<0)tags.push(t)})});
+  return'\n\n[User mood context: recent average '+avg+'/5; recent themes: '+(tags.slice(0,5).join(', ')||'none')+'. Use this lightly to inform tone, never mention it directly unless they bring it up.]';
+}
+function pushHistory(role,text,meta){history.push({role:role,text:text,ts:Date.now(),meta:meta||null});persist();renderTranscript()}
+
+/* local offline companion */
+var LocalCompanion={
+  themes:[
+    {re:/(anxi|worri|panic|nervous|overwhelm|stress|racing|dread)/i,r:[
+      'That sounds like a lot to carry at once. Let\u2019s slow it right down \u2014 what\u2019s the loudest thing in your mind right now?',
+      'Anxiety has a way of making everything feel urgent at the same time. You don\u2019t have to solve it all tonight. What triggered this particular wave?',
+      'I hear you. When it feels this big, the body often knows the way out before the mind does. Want to try a few slow breaths together?']},
+    {re:/(tired|exhaust|drained|burn(ed|t)\s*out|no energy|depleted)/i,r:[
+      'You sound genuinely worn down. That deserves kindness, not another to-do list. What has been taking the most from you lately?',
+      'Running on empty changes how everything feels. Is the exhaustion more physical, emotional, or \u2014 and this is usually the heaviest one \u2014 both at once?']},
+    {re:/(sad|lonely|alone|cry|down|empty|numb|miss|grief|loss)/i,r:[
+      'Thank you for trusting me with that. Sadness shared is a little lighter. I\u2019m here. What\u2019s underneath it, if you had to name it?',
+      'That\u2019s a heavy kind of quiet. You don\u2019t have to perform being okay right now. Tell me what today was like.']},
+    {re:/(angry|furious|frustrat|annoyed|mad|unfair|resent|rage)/i,r:[
+      'That anger makes sense \u2014 it usually shows up when something that matters got stepped on. What boundary was crossed?',
+      'Frustration that big needs somewhere to go. Say the unfiltered version here \u2014 I can hold it.']},
+    {re:/(can'?t\s*sleep|insomnia|awake|night|3\s*am)/i,r:[
+      'There\u2019s something particularly lonely about being awake when the world is quiet. What\u2019s moving through your mind tonight?',
+      'Late-night thoughts have a way of looming larger than they deserve. The ocean sounds and a sleep timer are right here if you want them. But first \u2014 what\u2019s keeping you up?']},
+    {re:/(good|great|happy|better|excited|proud|grateful|calm|light|peace)/i,r:[
+      'I\u2019m glad to hear that. Let\u2019s let it land for a moment \u2014 what made today feel different?',
+      'Hold that for a second. Noticing the good ones is quietly powerful. What\u2019s behind it?']},
+    {re:/(relationship|partner|family|friend|argument|fight|broke\s*up)/i,r:[
+      'Relationship pain is some of the most complex there is \u2014 it touches everything. What\u2019s the part that\u2019s weighing most heavily?',
+      'That sounds really difficult. When there\u2019s someone we care about involved, it\u2019s never just one feeling. What came up for you?']}
+  ],
+  generic:[
+    'I\u2019m listening. Tell me a little more about that.',
+    'That sounds like it\u2019s been sitting on you for a while. What does it feel like in your body right now?',
+    'You\u2019re making sense. When did this start feeling this way?',
+    'I hear you \u2014 and you don\u2019t have to carry it alone tonight.',
+    'Thank you for saying it out loud. What would even five percent of relief look like?',
+    'What\u2019s one small thing that might feel more manageable than the whole of it?'
+  ],
+  gi:0,
+  respond:function(text){
+    for(var i=0;i<this.themes.length;i++){if(this.themes[i].re.test(text)){var arr=this.themes[i].r;return arr[Math.floor(Math.random()*arr.length)]}}
+    var g=this.generic[this.gi%this.generic.length];this.gi++;return g;
+  }
+};
+
+function streamLocal(text,handlers){
+  var reply=LocalCompanion.respond(text);var words=reply.split(' '),i=0;
+  var iv=setInterval(function(){if(i>=words.length){clearInterval(iv);handlers.done();return}handlers.delta(words[i++]+' ')},24);
+  return function(){clearInterval(iv)};
+}
+
+/* proxied via Cloudflare Pages Function (/api/chat) — used for both BYOK and server-key,
+   so concurrency-based rate limiting applies to every request path. */
+function streamRemote(text,safetyFlag,handlers){
+  var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort()},26000);
+  var req={v:1,model:S.model,messages:histMessages(),safety:safetyFlag||null,key:S.apiKey||null,stream:true};
+  fetch(S.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(req),signal:ctrl.signal})
+  .then(async function(res){
+    clearTimeout(to);
+    if(!res.ok||!res.body){var et='';try{et=await res.text()}catch(e){}var code='http_'+res.status;var em=et.match(/\{"type":"error"[^\n]*/);if(em){try{var ej=JSON.parse(em[0]);if(ej.code)code=ej.code}catch(e){}}throw new Error(code)}
+    var reader=res.body.getReader(),dec=new TextDecoder(),buf='';
+    function pump(){return reader.read().then(function(chunk){
+      if(chunk.done)return;buf+=dec.decode(chunk.value,{stream:true});var idx;
+      while((idx=buf.indexOf('\n'))>=0){var line=buf.slice(0,idx).trim();buf=buf.slice(idx+1);if(!line)continue;
+        var evt;try{evt=JSON.parse(line)}catch(e){continue}
+        if(evt.type==='delta'&&evt.text)handlers.delta(evt.text);
+        else if(evt.type==='meta')handlers.meta&&handlers.meta(evt);
+        else if(evt.type==='error')throw new Error(evt.code||'api_error');
+        else if(evt.type==='done')return;
+      }return pump();
+    })}
+    return pump();
+  })
+  .then(function(){clearTimeout(to);handlers.done()})
+  .catch(function(err){clearTimeout(to);var m=err&&err.name==='AbortError'?'timeout':(err&&err.message?err.message:'network');handlers.error(m)});
+  return function(){try{ctrl.abort()}catch(e){}};
+}
+
+/* turn engine */
+var turnToken=0,sayBuf='',fullReply='',turnCancel=null,usedLocal=false;
+function userTurn(text){
+  if(V.busy)return;V.busy=true;turnToken++;
+  stopSpeaking();caption('ai','');caption('user','You: '+text);
+  var safety=crisisCheck(text)?'crisis':null;pushHistory('user',text);setVoice('thinking');
+  sayBuf='';fullReply='';usedLocal=false;
+  var t0=Date.now(),my=turnToken;
+  var talkIv=setInterval(function(){if(turnToken===my)stats.talkSec+=2},2000);
+  function flushSay(final){
+    if(!final){var m=sayBuf.match(/^[\s\S]*?[.!?…]["')\]]*([\s\n]|$)/);if(!m)return;var sent=m[0];sayBuf=sayBuf.slice(sent.length);speakNow(sent,false)}
+    else{var rest=sayBuf.trim();sayBuf='';if(rest){speakNow(rest,true)}else if(S.speak&&TTS.ok&&TTS.pending>0){TTS.onIdle=afterSpeech;armIdleSafe()}else{afterSpeech()}}
+  }
+  function speakNow(chunk,isLast){if(!S.speak||!TTS.ok){if(isLast)afterSpeech();return}speak(chunk,isLast?afterSpeech:null);if(V.voice!=='speaking')setVoice('speaking')}
+  function afterSpeech(){if(turnToken===my)finishTurn(false)}
+  var handlers={
+    meta:function(evt){if(evt.model&&evt.model.indexOf('local')===0)usedLocal=true},
+    delta:function(t){if(turnToken!==my)return;if(V.voice==='thinking')setVoice('speaking');fullReply+=t;sayBuf+=t;caption('ai',fullReply);flushSay(false)},
+    done:function(){if(turnToken!==my)return;clearInterval(talkIv);persist();if(fullReply.trim())pushHistory('assistant',fullReply.trim(),usedLocal?'local':null);flushSay(true)},
+    error:function(code){
+      if(turnToken!==my)return;clearInterval(talkIv);
+      if(code==='rate_limited')toast('The AI is busy right now — a breath\u2019s pause, then try again.','warn');
+      else if(code==='bad_key')toast('Your API key wasn\u2019t accepted — check it in Settings.','warn');
+      else if(code==='timeout')toast('That took too long. Try again.','warn');
+      else if(code==='no_key')toast('No AI key configured — running on the offline companion.','warn');
+      else toast('Couldn\u2019t reach the AI — switching to the offline companion.','warn');
+      setNet('local');usedLocal=true;
+      turnCancel=streamLocal(text,{
+        delta:function(t){if(turnToken!==my)return;if(V.voice==='thinking')setVoice('speaking');fullReply+=t;caption('ai',fullReply);flushSay(false)},
+        done:function(){if(turnToken!==my)return;clearInterval(talkIv);if(fullReply.trim())pushHistory('assistant',fullReply.trim(),'local');flushSay(true)}
+      });
+    }
+  };
+  if(!navigator.onLine){handlers.error('network');return}
+  turnCancel=streamRemote(text,safety,handlers);
+}
+function finishTurn(aborted){
+  turnToken++;V.busy=false;turnCancel=null;setVoice('idle');caption('user','');
+  if(aborted)caption('ai','');
+  if(!aborted&&S.auto&&V.byVoice&&SR.ok&&!$('#crisis-card').classList.contains('show')&&document.visibilityState==='visible'){
+    setTimeout(function(){if(!V.busy&&V.voice==='idle')startListening(true)},700);
+  }
+}
+
+/* text input */
+$('#input-bar').addEventListener('submit',function(e){
+  e.preventDefault();var inp=$('#input-text'),t=inp.value.trim();if(!t)return;
+  if(V.busy){toast('Calmora is still answering — one breath.');return}
+  inp.value='';V.byVoice=false;
+  if(V.voice==='listening'){if(SR.rec){try{SR.rec.stop()}catch(err){}}stopAnalyser()}
+  stopSpeaking();userTurn(t);
+});
+
+/* ══════════════ transcript ══════════════ */
+function renderTranscript(){
+  var l=$('#tx-list');l.innerHTML='';
+  if(!history.length){l.innerHTML='<p class="j-empty">Nothing yet.<br>Say hello — it stays on this device only.</p>';return}
+  history.forEach(function(m){
+    var d=el('div','tx-msg '+m.role);d.innerHTML='<p class="who">'+(m.role==='user'?'You':'Calmora')+' · '+relTime(m.ts)+(m.meta==='local'?' <span class="loc">· offline companion</span>':'')+'</p><p>'+esc(m.text)+'</p>';
+    l.appendChild(d);
+  });l.scrollTop=l.scrollHeight;
+}
+$('#btn-transcript').addEventListener('click',function(){renderTranscript();$('#tx-panel').classList.toggle('open')});
+$('#tx-close').addEventListener('click',function(){$('#tx-panel').classList.remove('open')});
+$('#tx-clear').addEventListener('click',function(){newConversation();$('#tx-panel').classList.remove('open')});
+$('#tx-export').addEventListener('click',function(){download('calmora-transcript.json',JSON.stringify(history,null,2));toast('Transcript exported.','good')});
+function newConversation(){
+  turnToken++;V.busy=false;if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();stopSpeaking();
+  if(turnCancel){try{turnCancel()}catch(e){}}turnCancel=null;
+  history=[];persist();setVoice('idle');caption('user','');caption('ai','');renderTranscript();
+  toast('Fresh start. Calmora\u2019s here whenever you are.');
+}
+$('#btn-new').addEventListener('click',newConversation);
+
+/* ══════════════ breathing ══════════════ */
+var BPATTERNS={
+  coherent:{name:'Coherent 5.5',phases:[['Inhale',5.5],['Exhale',5.5]],tip:'5.5 seconds each way. Shown to maximise heart rate variability and activate the parasympathetic system. The gold standard for day-to-day regulation.'},
+  box:{name:'Box',phases:[['Inhale',4],['Hold',4],['Exhale',4],['Hold',4]],tip:'Used by Navy SEALs for acute stress control. The holds train the nervous system to stay calm under pressure.'},
+  sigh:{name:'Physiological sigh',phases:[['Inhale',2],['Hold',0.5],['Double inhale',1.5],['Long exhale',8]],tip:'A double inhale followed by a long exhale. Stanford research shows this is the fastest single-breath technique to reduce physiological stress.'},
+  unwind:{name:'4-7-8',phases:[['Inhale',4],['Hold',7],['Exhale',8]],tip:'Dr Andrew Weil\u2019s classic relaxation pattern. The extended exhale slows heart rate and quiets the mind before sleep.'},
+  tactical:{name:'Tactical 4-4',phases:[['Inhale',4],['Exhale',4]],tip:'Simple and fast. Equal inhale and exhale, no holds. Easy to use mid-conversation or when you need a quick reset.'},
+  exhale:{name:'Long exhale',phases:[['Inhale',4],['Exhale',8]],tip:'Doubling the exhale relative to the inhale directly activates the vagus nerve and the rest-and-digest response.'}
+};
+var BR={pat:'coherent',cycles:4,run:null};
+$$('#br-pattern button').forEach(function(b){b.addEventListener('click',function(){BR.pat=b.getAttribute('data-p');$$('#br-pattern button').forEach(function(x){x.classList.toggle('on',x===b)});$('#br-tip').textContent=BPATTERNS[BR.pat]&&BPATTERNS[BR.pat].tip||''})});
+$$('#br-cycles button').forEach(function(b){b.addEventListener('click',function(){BR.cycles=+b.getAttribute('data-c');$$('#br-cycles button').forEach(function(x){x.classList.toggle('on',x===b)})})});
+$('#br-start').addEventListener('click',runBreathing);
+$('#br-again').addEventListener('click',runBreathing);
+$('#br-end').addEventListener('click',function(){brFinish(true)});
+$('#br-tip').textContent=BPATTERNS['coherent'].tip;
+function setBrView(v){['setup','run','done'].forEach(function(k){$('#br-view-'+k).style.display=k===v?'block':'none'})}
+function runBreathing(){
+  var pat=BPATTERNS[BR.pat],cycles=BR.cycles;setBrView('run');
+  var circle=$('#br-circle'),phaseEl=$('#br-phase'),meta=$('#br-meta');
+  var cyc=0,pi=0,t0=Date.now(),aborted=false,holdHigh=false,raf=0;
+  BR.run={stop:function(){aborted=true;cancelAnimationFrame(raf)}};
+  function phase(){
+    if(aborted)return;
+    if(pi>=pat.phases.length){pi=0;cyc++;if(cyc>=cycles){brFinish(false,t0);return}}
+    var p=pat.phases[pi],name=p[0],dur=p[1];if(dur<0.1){pi++;phase();return}
+    phaseEl.textContent=name;meta.textContent='Cycle '+(cyc+1)+' of '+cycles;
+    try{if(navigator.vibrate)navigator.vibrate(name.indexOf('Inhale')>=0?30:(name==='Exhale'||name==='Long exhale')?45:20)}catch(e){}
+    var start=performance.now(),from=(name.indexOf('Inhale')>=0)?0:(holdHigh?1:0),to=(name.indexOf('Inhale')>=0)?1:(name.indexOf('Exhale')>=0?0:from);
+    if(name.indexOf('Inhale')>=0)holdHigh=true;if(name.indexOf('Exhale')>=0)holdHigh=false;
+    (function tick(now){
+      if(aborted)return;var k=clamp((now-start)/(dur*1000),0,1),ease=0.5-0.5*Math.cos(Math.PI*k);
+      circle.style.setProperty('--b',(from+(to-from)*ease).toFixed(4));
+      if(k<1)raf=requestAnimationFrame(tick);else{pi++;phase()}
+    })(start);
+  }
+  phase();
+}
+function brFinish(early,t0){
+  if(BR.run){BR.run.stop();BR.run=null}
+  var secs=t0?Math.round((Date.now()-t0)/1000):0;stats.breathSec+=secs;persist();
+  $('#br-circle').style.setProperty('--b',0.5);
+  if(early){setBrView('setup');toast('Every breath still counted. Come back any time.')}
+  else{$('#br-summary').textContent=BR.cycles+' cycles of '+BPATTERNS[BR.pat].name+' \xb7 '+fmtClock(secs)+'. Well done.';setBrView('done')}
+}
+
+/* ══════════════ calm now ══════════════ */
+var CN={timers:[],raf:0,active:false};
+function cnStop(){CN.active=false;CN.timers.forEach(clearTimeout);CN.timers=[];cancelAnimationFrame(CN.raf);
+  $('#calmnow').classList.remove('open');if(BR.run){BR.run.stop();BR.run=null}setDock('talk')}
+$('#cn-skip').addEventListener('click',cnStop);
+function cnSay(t,sub){var e=$('#cn-text');e.style.opacity=0;$('#cn-sub').style.opacity=0;
+  CN.timers.push(setTimeout(function(){e.textContent=t;$('#cn-sub').textContent=sub||'';e.style.opacity=1;$('#cn-sub').style.opacity=1;announce(t)},320))}
+function cnBreath(cycles,then){
+  var orb=$('#cn-orb'),pat=BPATTERNS.coherent.phases,cyc=0,pi=0,raf=0,aborted=false;
+  BR.run={stop:function(){aborted=true;cancelAnimationFrame(raf)}};
+  function phase(){if(aborted||!CN.active)return;
+    if(pi>=pat.length){pi=0;cyc++;if(cyc>=cycles){orb.style.setProperty('--b',0.3);then();return}}
+    var p=pat[pi],dur=p[1];pi++;$('#cn-sub').textContent=p[0]+'\u2026';
+    var start=performance.now(),from=p[0].indexOf('Inhale')>=0?0:1,to=p[0].indexOf('Inhale')>=0?1:0;
+    (function tick(now){if(aborted||!CN.active)return;var k=clamp((now-start)/(dur*1000),0,1),ease=0.5-0.5*Math.cos(Math.PI*k);
+      orb.style.setProperty('--b',(from+(to-from)*ease).toFixed(4));if(k<1)raf=requestAnimationFrame(tick);else phase();
+    })(start);
+  }phase();
+}
+$('#hub-calmnow').addEventListener('click',startCalmNow);$('#calm-cta').addEventListener('click',startCalmNow);
+function startCalmNow(){
+  closeAllSheets(true);CN.active=true;stats.calmCount++;persist();$('#cn-controls').innerHTML='';
+  $('#calmnow').classList.add('open');var t=CN.timers;
+  cnSay('Pause with me for a moment.','Nothing to fix right now.');
+  t.push(setTimeout(function(){cnSay('Let\u2019s take three slow breaths.','Follow the circle \u2014 in\u2026 and out.')},3400));
+  t.push(setTimeout(function(){cnBreath(3,function(){if(!CN.active)return;
+    cnSay('Feel your feet on the floor.','Solid ground. You\u2019re held.');
+    t.push(setTimeout(function(){if(!CN.active)return;
+      cnSay('Look around and name one thing you can see.','Something small. Something ordinary. That\u2019s enough.');
+      t.push(setTimeout(function(){if(!CN.active)return;
+        cnSay('You did that for yourself.','That always counts. Stay as long as you like.');
+        var c=$('#cn-controls');
+        var b1=el('button','btn btn-foam','Soundscape');b1.addEventListener('click',function(){cnStop();openSheet('sounds')});
+        var b2=el('button','btn btn-ghost','Keep breathing');b2.addEventListener('click',function(){cnStop();openSheet('breathe')});
+        var b3=el('button','btn btn-ghost','Close');b3.addEventListener('click',cnStop);
+        c.appendChild(b1);c.appendChild(b2);c.appendChild(b3);
+      },6500));},5200));
+  })},7500));
+}
+
+/* ══════════════ grounding ══════════════ */
+var GSTEPS=[
+  {n:5,sense:'SEE',q:'things you can <b>see</b>',hint:'Look slowly. The shadow on the wall. The edge of a surface. The light source. Small details your eyes usually skip.'},
+  {n:4,sense:'TOUCH',q:'things you can <b>feel</b>',hint:'Your feet on the floor. The weight of your hands. The temperature of the air on your skin. Fabric texture.'},
+  {n:3,sense:'HEAR',q:'things you can <b>hear</b>',hint:'Reach for the farthest sound. Then the closest. Then something in between.'},
+  {n:2,sense:'SMELL',q:'things you can <b>smell</b>',hint:'Breathe in slowly. Even faint smells count \u2014 wood, fabric, the room itself.'},
+  {n:1,sense:'TASTE',q:'one thing you can <b>taste</b>',hint:'Take one slow sip of water if you have it. Notice it completely.'}
+];
+var GR={step:0,answers:[]};
+function groundReset(){GR.step=0;GR.answers=[];grRender()}
+function grRender(){
+  var dots=$$('#gr-dots i');dots.forEach(function(d,i){d.className=i<GR.step?'done':(i===GR.step?'now':'')});
+  var body=$('#gr-body');body.innerHTML='';
+  if(GR.step>=GSTEPS.length){grDone(body);return}
+  var s=GSTEPS[GR.step];
+  body.appendChild(el('p','gr-q',s.n+' '+s.q));body.appendChild(el('p','gr-hint',s.hint));
+  var ta=el('textarea','gr-input');ta.placeholder='Optional \u2014 name them here';ta.setAttribute('aria-label','Your answers');
+  if(GR.answers[GR.step])ta.value=GR.answers[GR.step];body.appendChild(ta);
+  var nav=el('div','gr-nav');
+  var skip=el('button','btn btn-ghost','Skip');skip.addEventListener('click',function(){GR.answers[GR.step]=ta.value.trim();GR.step++;grRender()});
+  var next=el('button','btn btn-amber',GR.step===4?'Finish':'Next \u2192');next.addEventListener('click',function(){GR.answers[GR.step]=ta.value.trim();GR.step++;grRender()});
+  nav.appendChild(skip);nav.appendChild(next);body.appendChild(nav);setTimeout(function(){try{ta.focus()}catch(e){}},150);
+}
+function grDone(body){
+  stats.groundCount++;persist();
+  body.appendChild(el('p','gr-q','Back in the room.'));
+  body.appendChild(el('p','gr-hint','You just walked your whole attention home \u2014 five senses, one step at a time. Notice how your shoulders are sitting now.'));
+  var nav=el('div','gr-nav');
+  var save=el('button','btn btn-foam','Save to journal');save.addEventListener('click',function(){
+    var lines=GR.answers.map(function(a,i){return a?(GSTEPS[i].n+' '+GSTEPS[i].sense.toLowerCase()+': '+a):null}).filter(Boolean);
+    journal.unshift({id:uid(),ts:Date.now(),text:lines.length?'Grounding \u2014 5-4-3-2-1\n'+lines.join('\n'):'Completed a 5-4-3-2-1 grounding session.',mood:null});
+    persist();toast('Saved to your journal.','good');groundReset();closeSheet($('#sheet-ground'));
+  });
+  var done=el('button','btn btn-ghost','Done');done.addEventListener('click',function(){groundReset();closeSheet($('#sheet-ground'))});
+  nav.appendChild(save);nav.appendChild(done);body.appendChild(nav);
+}
+
+/* ══════════════ PMR ══════════════ */
+var PMR_MUSCLES=[
+  {name:'Hands & forearms',inst:'Make tight fists. Hold\u2026 and let go completely.'},
+  {name:'Upper arms',inst:'Flex your biceps. Hold\u2026 then release and feel the warmth.'},
+  {name:'Shoulders',inst:'Raise them toward your ears as high as they go. Hold\u2026 and drop them down.'},
+  {name:'Face',inst:'Scrunch your face \u2014 eyes, nose, jaw. Hold\u2026 and soften completely.'},
+  {name:'Jaw & neck',inst:'Clench your jaw and push your chin forward slightly. Hold\u2026 and release.'},
+  {name:'Chest & back',inst:'Take a deep breath and hold, tensing your chest and upper back. Hold\u2026 and exhale fully.'},
+  {name:'Abdomen',inst:'Pull your stomach in tight, like bracing for something. Hold\u2026 then let it go.'},
+  {name:'Legs & feet',inst:'Push your feet into the floor and tense your whole leg. Hold\u2026 then release and feel them sink.'}
+];
+var PMR={step:0,running:false,timers:[]};
+function startPMR(){PMR.step=0;PMR.running=true;PMR.timers.forEach(clearTimeout);PMR.timers=[];pmrRender()}
+function pmrRender(){
+  var body=$('#pmr-body');body.innerHTML='';
+  if(PMR.step>=PMR_MUSCLES.length){pmrDone(body);return}
+  var m=PMR_MUSCLES[PMR.step];
+  var mc=el('div','pmr-muscle');mc.innerHTML='<h4>'+esc(m.name)+'</h4><p>'+esc(m.inst)+'</p>';
+  var bar=el('div','pmr-bar');var fill=el('div','pmr-bar-fill');bar.appendChild(fill);mc.appendChild(bar);
+  var nav=el('div','br-controls');nav.style.marginTop='12px';
+  var tensebtn=el('button','btn btn-amber','Tense \u2192 5s');
+  var skipbtn=el('button','btn btn-ghost','Skip');
+  nav.appendChild(tensebtn);nav.appendChild(skipbtn);body.appendChild(mc);body.appendChild(nav);
+  skipbtn.addEventListener('click',function(){PMR.timers.forEach(clearTimeout);PMR.step++;pmrRender()});
+  tensebtn.addEventListener('click',function(){
+    tensebtn.disabled=true;skipbtn.disabled=true;try{if(navigator.vibrate)navigator.vibrate(40)}catch(e){}
+    var start=Date.now();var iv=setInterval(function(){var k=(Date.now()-start)/5000;fill.style.width=clamp(k,0,1)*100+'%';if(k>=1)clearInterval(iv)},50);
+    PMR.timers.push(setTimeout(function(){clearInterval(iv);fill.style.width='100%';
+      tensebtn.textContent='Release \u2192 let go';tensebtn.disabled=false;
+      tensebtn.onclick=function(){try{if(navigator.vibrate)navigator.vibrate([30,30,30])}catch(e){}
+        PMR.step++;stats.pmrCount++;persist();pmrRender()};
+    },5000));
+  });
+}
+function pmrDone(body){
+  body.innerHTML='<p class="gr-q">Body released.</p><p class="gr-hint">From head to toe, you just gave your nervous system permission to let go. Take a moment to notice the difference between before and now.</p>';
+  var nav=el('div','br-controls');nav.style.marginTop='14px';
+  var s=el('button','btn btn-foam','Save to journal');s.addEventListener('click',function(){
+    journal.unshift({id:uid(),ts:Date.now(),text:'Completed a full progressive muscle relaxation session.',mood:null});persist();toast('Saved.','good');closeSheet($('#sheet-pmr'));
+  });
+  var d=el('button','btn btn-ghost','Done');d.addEventListener('click',function(){closeSheet($('#sheet-pmr'))});
+  nav.appendChild(s);nav.appendChild(d);body.appendChild(nav);
+}
+$('#hub-pmr').addEventListener('click',function(){openSheet('pmr');startPMR()});
+
+/* ══════════════ values ══════════════ */
+var VALUES_LIST=[
+  {n:'Family',i:'❤️'},{n:'Friendship',i:'🤝'},{n:'Creativity',i:'🎨'},{n:'Health',i:'🌿'},
+  {n:'Purpose',i:'🧭'},{n:'Growth',i:'🌱'},{n:'Honesty',i:'🌟'},{n:'Freedom',i:'🕊️'},
+  {n:'Peace',i:'☮️'},{n:'Connection',i:'🔗'},{n:'Achievement',i:'🏅'},{n:'Kindness',i:'💛'},
+  {n:'Nature',i:'🌳'},{n:'Courage',i:'⚡'},{n:'Rest',i:'🌙'},{n:'Learning',i:'📖'}
+];
+var selectedVals=[];
+function renderValues(){
+  var grid=$('#val-grid');grid.innerHTML='';
+  VALUES_LIST.forEach(function(v){
+    var chip=el('div','val-chip'+(selectedVals.indexOf(v.n)>-1?' on':''));
+    chip.innerHTML='<span class="v-icon">'+v.i+'</span><span class="v-name">'+esc(v.n)+'</span>';
+    chip.addEventListener('click',function(){
+      var idx=selectedVals.indexOf(v.n);
+      if(idx>-1)selectedVals.splice(idx,1);
+      else if(selectedVals.length<5)selectedVals.push(v.n);
+      else{toast('Pick up to 5 values.','warn');return}
+      chip.classList.toggle('on',selectedVals.indexOf(v.n)>-1);
+    });
+    grid.appendChild(chip);
+  });
+}
+$('#hub-values').addEventListener('click',function(){selectedVals=[];renderValues();openSheet('values')});
+$('#val-next').addEventListener('click',function(){
+  if(!selectedVals.length){toast('Select at least one value.','warn');return}
+  $('#val-cta').hidden=true;$('#val-reflect').hidden=false;
+  var q='Your top values right now: '+selectedVals.join(', ')+'. Pick one. In what small way could you honour it today, even imperfectly?';
+  $('#val-reflect-q').textContent=q;setTimeout(function(){try{$('#val-reflect-text').focus()}catch(e){}},100);
+});
+$('#val-save').addEventListener('click',function(){
+  var t=$('#val-reflect-text').value.trim();
+  var entry='Values I\u2019m connecting with: '+selectedVals.join(', ')+(t?'\n\nReflection: '+t:'');
+  journal.unshift({id:uid(),ts:Date.now(),text:entry,mood:null});persist();toast('Saved to your journal.','good');closeSheet($('#sheet-values'));
+});
+
+/* ══════════════ sleep ══════════════ */
+var SL={on:false,end:0,iv:0,lock:null,hiddenAt:0,faded:false};
+function buildSleepChips(){
+  var host=$('#sleep-chips');host.innerHTML='';
+  LAYERS.forEach(function(d){
+    var b=el('button');b.innerHTML='<svg aria-hidden="true"><use href="#'+d.icon+'"/></svg>';b.setAttribute('aria-label',d.name);
+    if(engines[d.id].playing)b.classList.add('on');
+    b.addEventListener('click',function(ev){ev.stopPropagation();stopAllLayers();engines[d.id].start();$('#sleep-sound-name').textContent=d.name;buildSleepChips()});
+    host.appendChild(b);
+  });
+}
+function startSleep(){
+  if(!axEnsure()){toast('Audio isn\u2019t available here.','warn');return}
+  var mins=+$('#sleep-mins').value||15;
+  if(!anyPlaying())engines['ocean'].start();renderSoundRows();
+  SL.on=true;SL.faded=false;SL.end=Date.now()+mins*60000;
+  $('#sleep-sound-name').textContent=playingNames().join(' + ')||'Ocean';
+  closeAllSheets(true);$('#sleep-mode').classList.add('open');$('#sleep-mode').classList.remove('awake');
+  buildSleepChips();if(navigator.wakeLock&&navigator.wakeLock.request){navigator.wakeLock.request('screen').then(function(l){SL.lock=l}).catch(function(){})}
+  clearInterval(SL.iv);SL.iv=setInterval(sleepTick,1000);sleepTick();scheduleSleepDim();
+  stats.sleepMin+=mins;persist();announce('Sleep mode on for '+mins+' minutes. Tap the screen to show controls.');
+}
+function sleepTick(){
+  var rem=(SL.end-Date.now())/1000;if(rem<=0){endSleep(false);return}
+  $('#sleep-clock').textContent=fmtClock(rem);
+  if(rem<=22&&!SL.faded&&AX.ready){SL.faded=true;var t=AX.ctx.currentTime;AX.master.gain.cancelScheduledValues(t);AX.master.gain.setValueAtTime(AX.master.gain.value,t);AX.master.gain.linearRampToValueAtTime(0.0001,t+18)}
+}
+function scheduleSleepDim(){clearTimeout(SL.hiddenAt);SL.hiddenAt=setTimeout(function(){$('#sleep-mode').classList.remove('awake')},8000)}
+$('#sleep-mode').addEventListener('click',function(){if(!SL.on)return;$('#sleep-mode').classList.add('awake');scheduleSleepDim()});
+$('#sleep-add5').addEventListener('click',function(e){e.stopPropagation();SL.end+=5*60000;if(SL.faded&&AX.ready){var t=AX.ctx.currentTime;AX.master.gain.cancelScheduledValues(t);AX.master.gain.setValueAtTime(mix.master,t);SL.faded=false}sleepTick();toast('+5 minutes. Sleep well.');scheduleSleepDim()});
+$('#sleep-end').addEventListener('click',function(e){e.stopPropagation();endSleep(true)});
+function endSleep(manual){
+  if(!SL.on&&!manual)return;SL.on=false;clearInterval(SL.iv);clearTimeout(SL.hiddenAt);
+  if(SL.lock&&SL.lock.release){SL.lock.release().catch(function(){});SL.lock=null}
+  stopAllLayers();freqStop();
+  if(AX.ready){var t=AX.ctx.currentTime;AX.master.gain.cancelScheduledValues(t);AX.master.gain.setValueAtTime(mix.master,t)}
+  $('#sleep-mode').classList.remove('open','awake');toast(manual?'Session ended. Welcome back.':'Good morning. The sounds faded out on their own.');setDock('talk');
+}
+$('#sleep-start').addEventListener('click',startSleep);
+
+/* ══════════════ journal ══════════════ */
+var PROMPTS=['What\u2019s taking up space in your mind right now?','Name one thing that felt heavy today \u2014 and one that didn\u2019t.','What would you tell a friend feeling exactly this?','Three small things you noticed today, in detail.','Where do you hold tension? What helped it, even slightly?','Write the worry down. Then one kind sentence to yourself about it.','What are you looking forward to, however small?','What would rest actually look like for you right now?','If today had a colour, what would it be and why?','What\u2019s one thing you did today that you\u2019re not giving yourself credit for?'];
+var JMOODS=[{l:1,n:'Heavy',c:'#7d8fa8'},{l:2,n:'Low',c:'#8fb0a2'},{l:3,n:'Okay',c:'#c9c39a'},{l:4,n:'Good',c:'#e9c08c'},{l:5,n:'Light',c:'#93d6c6'}];
+var JEDIT={mood:null};
+function jPrompt(){var i=Math.floor(Math.random()*PROMPTS.length);$('#j-prompt-text').textContent='\u201C'+PROMPTS[i]+'\u201D'}
+$('#j-prompt-next').addEventListener('click',jPrompt);
+$('#j-new').addEventListener('click',function(){var ed=$('#j-editor');ed.hidden=!ed.hidden;if(!ed.hidden){jPrompt();$('#j-text').value='';JEDIT.mood=null;renderJMoods();setTimeout(function(){try{$('#j-text').focus()}catch(e){}},100)}});
+function renderJMoods(){
+  var host=$('#j-moods');host.innerHTML='';
+  JMOODS.forEach(function(m){
+    var b=el('button',JEDIT.mood===m.l?'on':'','<i style="--mc:'+m.c+'"></i>'+esc(m.n));b.style.setProperty('--mc',m.c);
+    b.addEventListener('click',function(){JEDIT.mood=JEDIT.mood===m.l?null:m.l;renderJMoods()});host.appendChild(b);
+  });
+}
+$('#j-cancel').addEventListener('click',function(){$('#j-editor').hidden=true});
+$('#j-save').addEventListener('click',function(){
+  var t=$('#j-text').value.trim();if(!t){toast('Even one word counts \u2014 but write at least one.','warn');return}
+  journal.unshift({id:uid(),ts:Date.now(),text:t,mood:JEDIT.mood});persist();
+  $('#j-editor').hidden=true;$('#j-text').value='';renderJournal();$('#dock-j').hidden=false;
+  toast('Saved. Private, on this device.','good');
+});
+$('#j-search').addEventListener('input',function(){renderJournal(this.value.trim().toLowerCase())});
+function moodColor(l){var m=JMOODS.find(function(x){return x.l===l});return m?m.c:null}
+function renderJournal(q){
+  var host=$('#j-list');host.innerHTML='';var items=journal.filter(function(j){return !q||j.text.toLowerCase().indexOf(q)>-1});
+  $('#dock-j').hidden=journal.length===0;
+  if(!items.length){host.innerHTML='<p class="j-empty">'+(journal.length?'No entries match.':'Nothing written yet.<br>The page is patient \u2014 start whenever.')+'</p>';return}
+  items.forEach(function(j){
+    var c=el('div','j-entry');var mc=moodColor(j.mood);
+    c.innerHTML='<div class="j-meta">'+(mc?'<span class="j-mood" style="background:'+mc+'"></span>':'')+'<span>'+relTime(j.ts)+'</span></div><p>'+esc(j.text)+'</p><button class="j-del" aria-label="Delete"><svg aria-hidden="true"><use href="#i-trash"/></svg></button>';
+    var del=c.querySelector('.j-del');del.addEventListener('click',function(){
+      if(del.dataset.arm){journal=journal.filter(function(x){return x.id!==j.id});persist();renderJournal(($('#j-search').value||'').toLowerCase());toast('Entry deleted.')}
+      else{del.dataset.arm='1';del.style.color='var(--coral)';setTimeout(function(){delete del.dataset.arm;del.style.color=''},2500)}
+    });host.appendChild(c);
+  });
+}
+$('#j-export').addEventListener('click',function(){download('calmora-journal.json',JSON.stringify(journal,null,2));toast('Journal exported.','good')});
+
+/* ══════════════ mood check-in & insights ══════════════ */
+var TAGS=['tired','anxious','stressed','restless','overwhelmed','lonely','numb','calm','hopeful','grateful','proud','tender','irritable','scattered','grounded','heavy'];
+var CI={level:null,tags:{}};
+(function(){var host=$('#ci-tags');TAGS.forEach(function(t){var b=el('button','',esc(t));b.addEventListener('click',function(){CI.tags[t]=!CI.tags[t];b.classList.toggle('on',CI.tags[t])});host.appendChild(b)})})();
+$$('#ci-levels button').forEach(function(b){b.addEventListener('click',function(){CI.level=+b.getAttribute('data-l');$$('#ci-levels button').forEach(function(x){x.classList.toggle('on',x===b)})})});
+$('#ci-save').addEventListener('click',function(){
+  if(!CI.level){toast('Pick the face that fits \u2014 even \u201COkay\u201D is honest.','warn');return}
+  moods.push({id:uid(),ts:Date.now(),level:CI.level,tags:Object.keys(CI.tags).filter(function(t){return CI.tags[t]}),note:$('#ci-note').value.trim()});
+  persist();CI.level=null;CI.tags={};$('#ci-note').value='';
+  $$('#ci-levels button').forEach(function(x){x.classList.remove('on')});$$('#ci-tags button').forEach(function(x){x.classList.remove('on')});
+  renderCheckinState();renderInsights();toast('Logged. Thank you for checking in.','good');
+});
+function todayCheckedIn(){var d=new Date();d.setHours(0,0,0,0);return moods.some(function(m){return m.ts>=d.getTime()})}
+function renderCheckinState(){var done=todayCheckedIn();$('#checkin-pill').hidden=done;$('#dock-y').hidden=done}
+$('#checkin-pill').addEventListener('click',function(){openSheet('you')});
+function renderInsights(){
+  var spark=$('#in-spark');var recent=moods.slice(-14);
+  if(recent.length<2){spark.innerHTML='<p class="spark-empty">Check in a couple of times and a gentle mood curve will appear here.<br>No scores, no streaks-shaming \u2014 just your own weather.</p>'}
+  else{
+    var W=300,H=70,P=8;var pts=recent.map(function(m,i){return[P+i*(W-2*P)/Math.max(1,recent.length-1),H-P-(m.level-1)*(H-2*P)/4]});
+    var line=pts.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(' ');
+    var area=line+' L '+pts[pts.length-1][0].toFixed(1)+' '+(H-2)+' L '+pts[0][0].toFixed(1)+' '+(H-2)+' Z';
+    spark.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-label="Mood trend"><defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#93d6c6" stop-opacity=".28"/><stop offset="100%" stop-color="#93d6c6" stop-opacity="0"/></linearGradient></defs><path d="'+area+'" fill="url(#mg)"/><path d="'+line+'" fill="none" stroke="#93d6c6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'+pts.map(function(p){return'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="#e9c08c"/>'}).join('')+'</svg>';
+  }
+  var top=null,topV=-1;Object.keys(stats.sndSec).forEach(function(k){if(stats.sndSec[k]>topV){topV=stats.sndSec[k];top=k}});
+  var topName=top?(LAYERS.find(function(l){return l.id===top})||{name:'—'}).name:'—';
+  var rows=[['Check-ins logged',moods.length],['Avg mood (last 10)',moods.slice(-10).length?((moods.slice(-10).reduce(function(s,m){return s+m.level},0)/moods.slice(-10).length).toFixed(1)+' / 5'):'—'],['Time talking',fmtClock(stats.talkSec)],['Time breathing',fmtClock(stats.breathSec)],['Grounding sessions',stats.groundCount],['PMR sessions',stats.pmrCount],['Calm resets',stats.calmCount],['Favourite soundscape',topV>0?topName:'—'],['Journal entries',journal.length]];
+  var host=$('#in-stats');host.innerHTML='';rows.forEach(function(r){host.appendChild(el('div','stat-row','<span class="k">'+r[0]+'</span><span class="v">'+esc(String(r[1]))+'</span>'))});
+}
+$('#btn-export-all').addEventListener('click',function(){download('calmora-everything.json',JSON.stringify({exportedAt:new Date().toISOString(),journal:journal,moods:moods,stats:stats,history:history,settings:{model:S.model,endpoint:S.endpoint}},null,2));toast('Everything exported. It was always yours.','good')});
+$('#btn-erase').addEventListener('click',function(){var b=$('#btn-erase');if(b.dataset.arm){journal=[];moods=[];history=[];stats={talkSec:0,breathSec:0,groundCount:0,calmCount:0,pmrCount:0,sleepMin:0,sndSec:{}};persist();renderInsights();renderCheckinState();renderTranscript();delete b.dataset.arm;b.classList.remove('arm');b.textContent='Erase everything';toast('All data erased. Clean slate.')}else{b.dataset.arm='1';b.classList.add('arm');b.textContent='Tap again to erase';setTimeout(function(){delete b.dataset.arm;b.classList.remove('arm');b.textContent='Erase everything'},3000)}});
+
+/* ══════════════ settings ══════════════ */
+function bindText(id,key,after){var e=$(id);e.value=S[key]||'';e.addEventListener('change',function(){S[key]=e.value.trim();saveSettings();if(after)after()})}
+bindText('#set-endpoint','endpoint',checkHealth);bindText('#set-model','model');
+bindText('#set-em-label','emLabel');bindText('#set-em-number','emNumber');
+bindText('#set-trust-name','trustName');bindText('#set-trust-number','trustNumber');
+(function(){var inp=$('#set-key'),eye=$('#set-key-eye');inp.value=S.apiKey||'';
+  eye.addEventListener('click',function(){var show=inp.type==='password';inp.type=show?'text':'password';eye.setAttribute('aria-pressed',String(show));eye.innerHTML='<svg aria-hidden="true"><use href="#'+(show?'i-eye-off':'i-eye')+'"/></svg>'});
+  function commit(){S.apiKey=inp.value.trim();saveSettings();checkHealth();toast(S.apiKey?'Key saved — connecting to OpenRouter directly.':'Key removed — using your server endpoint.')}
+  inp.addEventListener('change',commit);inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();inp.blur();commit()}});
+})();
+function bindSwitch(id,key,after){var e=$(id);e.checked=!!S[key];e.addEventListener('change',function(){S[key]=e.checked;saveSettings();if(after)after()})}
+bindSwitch('#set-auto','auto');bindSwitch('#set-speak','speak');
+bindSwitch('#set-large','large',function(){document.documentElement.classList.toggle('lc',S.large)});
+bindSwitch('#set-rm','rm',function(){document.documentElement.classList.toggle('rm',S.rm)});
+$('#set-rate').value=S.rate;fillRange($('#set-rate'));
+$('#set-rate').addEventListener('input',function(){S.rate=parseFloat(this.value);saveSettings();fillRange(this)});
+$('#set-voice').addEventListener('change',function(){S.voice=this.value;saveSettings();TTS.voice=TTS.voices.find(function(v){return v.name===S.voice})||TTS.voice;speak('Like this?')});
+$('#btn-settings').addEventListener('click',function(){openSheet('settings')});
+$('#net-pill').addEventListener('click',function(){openSheet('settings')});
+
+/* ══════════════ connectivity ══════════════ */
+function setNet(state,text){$('#net-pill').setAttribute('data-net',state);$('#net-text').textContent=text||(state==='on'?'online':(state==='off'?'offline':'local mode'))}
+var healthT=null;
+function setKeyStatus(cls,txt){var s=$('#key-status');if(!s)return;s.className='key-status'+(cls?' '+cls:'');s.textContent=txt||''}
+function checkHealth(){
+  clearTimeout(healthT);if(!navigator.onLine){setNet('off');return}
+  if(S.apiKey){
+    setKeyStatus('check','checking key\u2026');var k=new AbortController();healthT=setTimeout(function(){k.abort()},7000);
+    fetch('https://openrouter.ai/api/v1/auth/key',{headers:{'Authorization':'Bearer '+S.apiKey},signal:k.signal})
+      .then(function(r){clearTimeout(healthT);if(r.ok){setNet('on','key connected');setKeyStatus('ok','Key valid \u2713')}
+        else if(r.status===401||r.status===403){setNet('off','invalid key');setKeyStatus('bad','Key not recognised \u2014 check it.')}
+        else{setNet('on','online');setKeyStatus('','')}})
+      .catch(function(){clearTimeout(healthT);setNet('on','online');setKeyStatus('','')});return;
+  }
+  setKeyStatus('','');var base=S.endpoint.replace(/\/chat\/?$/,'/health');
+  var ctrl=new AbortController();healthT=setTimeout(function(){ctrl.abort()},4000);
+  fetch(base,{signal:ctrl.signal}).then(function(r){clearTimeout(healthT);setNet(r.ok?'on':'local')}).catch(function(){clearTimeout(healthT);setNet('local')});
+}
+window.addEventListener('online',function(){checkHealth();toast('Back online.')});
+window.addEventListener('offline',function(){setNet('off');toast('Offline \u2014 breathing, sounds, grounding and journal all still work.','warn')});
+
+/* ══════════════ init ══════════════ */
+(function init(){
+  var h=new Date().getHours();
+  $('#greeting').textContent=h<5?'a quiet hour':h<12?'good morning':h<18?'good afternoon':'good evening';
+  document.documentElement.classList.toggle('lc',!!S.large);document.documentElement.classList.toggle('rm',!!S.rm);
+  renderSoundRows();renderJournal();renderTranscript();renderCheckinState();
+  setVoice('idle');setTimeout(checkHealth,900);
+  if(!SR.ok){$('#input-text').setAttribute('placeholder','Tell me what\u2019s on your mind\u2026')}
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&TTS.ok){try{speechSynthesis.resume()}catch(e){}}});
+  window.addEventListener('beforeunload',persist);setNet(navigator.onLine?'local':'off');
+})();
+})();
+</script>
+</body>
+</html>
