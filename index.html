@@ -944,6 +944,10 @@ html.rm .msg,html.rm .typing i{animation:none !important}
     </div>
     <p class="key-status" id="key-status"></p>
     <p class="hint-line">Replies come from your <b>/api/chat</b> server, which adds the prompt and key. <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" style="color:var(--foam)">Get a free OpenRouter key →</a> and paste it above to use your own quota (optional). No server or key? The offline companion still talks.</p>
+    <p class="sec-label">Language</p>
+    <div class="set-group">
+      <div class="set-row"><span class="lab"><b>Interface &amp; voice language</b><small>Changes the interface, speech recognition, spoken replies, and AI replies.</small></span><select id="set-lang" aria-label="Language"></select></div>
+    </div>
     <p class="sec-label">Voice</p>
     <div class="set-group">
       <div class="set-row"><span class="lab"><b>Speak replies</b><small>Turn off for text-only mode.</small></span><span class="switch"><input type="checkbox" id="set-speak"/><span class="tr"></span></span></div>
@@ -1038,9 +1042,58 @@ function download(name,text){var b=new Blob([text],{type:'application/json'});va
 /* ══════════════ settings & state ══════════════ */
 var S=Object.assign({
   endpoint:'/api/chat',model:'openrouter/free',apiKey:'',auto:true,speak:true,large:false,
-  rate:1,voice:'',emLabel:'',emNumber:'',trustName:'',trustNumber:'',rm:false,masterVol:0.8,chatView:false
+  rate:1,voice:'',emLabel:'',emNumber:'',trustName:'',trustNumber:'',rm:false,masterVol:0.8,chatView:false,lang:(navigator.language||'en').slice(0,2)
 },store.get('calmora:settings',{}));
 function saveSettings(){store.set('calmora:settings',S)}
+/* ══════════════ i18n / multi-language ══════════════ */
+var LANGS=[
+  {code:'en',name:'English',stt:'en-US',dir:'ltr'},
+  {code:'hi',name:'हिन्दी',stt:'hi-IN',dir:'ltr'},
+  {code:'es',name:'Español',stt:'es-ES',dir:'ltr'},
+  {code:'fr',name:'Français',stt:'fr-FR',dir:'ltr'},
+  {code:'de',name:'Deutsch',stt:'de-DE',dir:'ltr'},
+  {code:'pt',name:'Português',stt:'pt-BR',dir:'ltr'},
+  {code:'ar',name:'العربية',stt:'ar-SA',dir:'rtl'}
+];
+function langMeta(c){var m=LANGS.filter(function(l){return l.code===c})[0];return m||LANGS[0]}
+function langStt(c){return langMeta(c).stt}
+function langDir(c){return langMeta(c).dir}
+function langName(c){return langMeta(c).name}
+var STRINGS={
+en:{'greeting.night':'a quiet hour','greeting.morning':'good morning','greeting.afternoon':'good afternoon','greeting.evening':'good evening','heading.idle':'What&rsquo;s on your <em>mind</em>?','heading.listening':'Go ahead &mdash; I&rsquo;m <em>listening</em>.','heading.thinking':'Let me sit with that <em>for a moment</em>&hellip;','label.idle':'tap to talk \u00b7 type if you prefer','label.listening':'listening\u2026','label.thinking':'thinking\u2026','label.speaking':'calmora','cta.talk':'Talk to Calmora','cta.talk_listening':'Listening \u2014 tap to stop','cta.talk_thinking':'Thinking\u2026','cta.talk_speaking':'Speaking\u2026','cta.calm':'Calm me now','input.placeholder':'or type it here\u2026','dock.talk':'Talk','dock.calm':'Calm','dock.sounds':'Sounds','dock.journal':'Journal','dock.you':'You','chip.breathe':'Breathe','chip.sounds':'Soundscapes','chip.ground':'Grounding','chip.calm':'Calm hub','chip.journal':'Journal','chat.empty_sub':'I&rsquo;m Calmora. Talk or type &mdash; whatever&rsquo;s on your mind lands right here.','settings.language':'Language','suggestions':[['I can\u2019t sleep','I can\u2019t sleep, my mind just won\u2019t switch off.'],['I feel anxious','I feel anxious and I\u2019m not sure why.'],['Too much today','Everything feels like too much today.'],['Something good','Something good happened today.']]},
+hi:{'greeting.night':'एक शांत पल','greeting.morning':'सुप्रभात','greeting.afternoon':'शुभ अपराह्न','greeting.evening':'शुभ संध्या','heading.idle':'आपके <em>मन</em> में क्या है?','heading.listening':'बोलिए &mdash; मैं <em>सुन</em> रहा हूँ।','heading.thinking':'एक <em>पल</em> सोचने दें&hellip;','label.idle':'बात करने के लिए टैप करें \u00b7 या टाइप करें','label.listening':'सुन रहा हूँ\u2026','label.thinking':'सोच रहा हूँ\u2026','label.speaking':'काल्मोरा','cta.talk':'काल्मोरा से बात करें','cta.talk_listening':'सुन रहा हूँ \u2014 रोकने के लिए टैप करें','cta.talk_thinking':'सोच रहा हूँ\u2026','cta.talk_speaking':'बोल रहा हूँ\u2026','cta.calm':'मुझे शांत करें','input.placeholder':'या यहाँ टाइप करें\u2026','dock.talk':'बात','dock.calm':'शांति','dock.sounds':'ध्वनि','dock.journal':'डायरी','dock.you':'आप','chip.breathe':'साँस','chip.sounds':'ध्वनियाँ','chip.ground':'ग्राउंडिंग','chip.calm':'शांति','chip.journal':'डायरी','chat.empty_sub':'मैं काल्मोरा हूँ। बोलें या टाइप करें &mdash; जो भी मन में है, यहीं आएगा।','settings.language':'भाषा','suggestions':[['मुझे नींद नहीं आ रही','मुझे नींद नहीं आ रही, दिमाग बंद नहीं हो रहा।'],['मुझे घबराहट है','मुझे घबराहट हो रही है और पता नहीं क्यों।'],['आज बहुत हो गया','आज सब बहुत ज़्यादा लग रहा है।'],['कुछ अच्छा','आज कुछ अच्छा हुआ।']]},
+es:{'greeting.night':'una hora tranquila','greeting.morning':'buenos días','greeting.afternoon':'buenas tardes','greeting.evening':'buenas noches','heading.idle':'¿Qué tienes en <em>mente</em>?','heading.listening':'Adelante &mdash; te <em>escucho</em>.','heading.thinking':'Déjame pensarlo un <em>momento</em>&hellip;','label.idle':'toca para hablar \u00b7 o escribe','label.listening':'escuchando\u2026','label.thinking':'pensando\u2026','label.speaking':'calmora','cta.talk':'Habla con Calmora','cta.talk_listening':'Escuchando \u2014 toca para parar','cta.talk_thinking':'Pensando\u2026','cta.talk_speaking':'Hablando\u2026','cta.calm':'Cálmame ahora','input.placeholder':'o escribe aquí\u2026','dock.talk':'Hablar','dock.calm':'Calma','dock.sounds':'Sonidos','dock.journal':'Diario','dock.you':'Tú','chip.breathe':'Respirar','chip.sounds':'Paisajes','chip.ground':'Anclaje','chip.calm':'Calma','chip.journal':'Diario','chat.empty_sub':'Soy Calmora. Habla o escribe &mdash; lo que tengas en mente llega aquí.','settings.language':'Idioma','suggestions':[['No puedo dormir','No puedo dormir, mi mente no se apaga.'],['Me siento ansioso','Me siento con ansiedad y no sé por qué.'],['Hoy es demasiado','Hoy todo parece demasiado.'],['Algo bueno','Algo bueno pasó hoy.']]},
+fr:{'greeting.night':'une heure tranquille','greeting.morning':'bonjour','greeting.afternoon':'bon après-midi','greeting.evening':'bonsoir','heading.idle':'Qu&rsquo;as-tu en <em>tête</em> ?','heading.listening':'Vas-y &mdash; je t&rsquo;<em>écoute</em>.','heading.thinking':'Laisse-moi y réfléchir un <em>instant</em>&hellip;','label.idle':'touche pour parler \u00b7 ou écris','label.listening':'écoute\u2026','label.thinking':'réflexion\u2026','label.speaking':'calmora','cta.talk':'Parler à Calmora','cta.talk_listening':'À l&rsquo;écoute \u2014 touche pour arrêter','cta.talk_thinking':'Réflexion\u2026','cta.talk_speaking':'Parole\u2026','cta.calm':'Apaise-moi','input.placeholder':'ou écris ici\u2026','dock.talk':'Parler','dock.calm':'Apaiser','dock.sounds':'Sons','dock.journal':'Journal','dock.you':'Vous','chip.breathe':'Respirer','chip.sounds':'Ambiances','chip.ground':'Ancrage','chip.calm':'Espace','chip.journal':'Journal','chat.empty_sub':'Je suis Calmora. Parle ou écris &mdash; ce que tu as en tête arrive ici.','settings.language':'Langue','suggestions':[['Je n\u2019arrive pas à dormir','Je n\u2019arrive pas à dormir, mon esprit ne s\u2019arrête pas.'],['Je me sens anxieux','Je me sens anxieux sans savoir pourquoi.'],['Trop de choses','Tout me semble trop aujourd\u2019hui.'],['Du positif','Quelque chose de bien s\u2019est passé aujourd\u2019hui.']]},
+de:{'greeting.night':'eine stille Stunde','greeting.morning':'guten Morgen','greeting.afternoon':'guten Tag','greeting.evening':'guten Abend','heading.idle':'Was beschäftigt <em>dich</em>?','heading.listening':'Nur zu &mdash; ich <em>höre</em> zu.','heading.thinking':'Lass mich kurz <em>nachdenken</em>&hellip;','label.idle':'tippen zum Sprechen \u00b7 oder schreiben','label.listening':'zu hören\u2026','label.thinking':'nachdenken\u2026','label.speaking':'calmora','cta.talk':'Sprich mit Calmora','cta.talk_listening':'Ich höre zu \u2014 tippen zum Stoppen','cta.talk_thinking':'Nachdenken\u2026','cta.talk_speaking':'Sprechen\u2026','cta.calm':'Beruhige mich','input.placeholder':'oder schreib hier\u2026','dock.talk':'Sprechen','dock.calm':'Ruhe','dock.sounds':'Klänge','dock.journal':'Tagebuch','dock.you':'Du','chip.breathe':'Atmen','chip.sounds':'Klänge','chip.ground':'Erdung','chip.calm':'Ruhe','chip.journal':'Tagebuch','chat.empty_sub':'Ich bin Calmora. Sprich oder schreib &mdash; was dich beschäftigt, landet hier.','settings.language':'Sprache','suggestions':[['Ich kann nicht schlafen','Ich kann nicht schlafen, meine Gedanken hören nicht auf.'],['Ich fühle mich unruhig','Ich fühle mich unruhig und weiß nicht warum.'],['Zu viel heute','Heute ist alles zu viel.'],['Etwas Gutes','Heute ist etwas Gutes passiert.']]},
+pt:{'greeting.night':'uma hora tranquila','greeting.morning':'bom dia','greeting.afternoon':'boa tarde','greeting.evening':'boa noite','heading.idle':'O que você tem em <em>mente</em>?','heading.listening':'Pode falar &mdash; estou <em>ouvindo</em>.','heading.thinking':'Deixe-me pensar um <em>instante</em>&hellip;','label.idle':'toque para falar \u00b7 ou escreva','label.listening':'ouvindo\u2026','label.thinking':'pensando\u2026','label.speaking':'calmora','cta.talk':'Fale com Calmora','cta.talk_listening':'Ouvindo \u2014 toque para parar','cta.talk_thinking':'Pensando\u2026','cta.talk_speaking':'Falando\u2026','cta.calm':'Me acalme agora','input.placeholder':'ou escreva aqui\u2026','dock.talk':'Falar','dock.calm':'Calma','dock.sounds':'Sons','dock.journal':'Diário','dock.you':'Você','chip.breathe':'Respirar','chip.sounds':'Paisagens','chip.ground':'Aterramento','chip.calm':'Calma','chip.journal':'Diário','chat.empty_sub':'Sou a Calmora. Fale ou escreva &mdash; o que estiver em mente chega aqui.','settings.language':'Idioma','suggestions':[['Não consigo dormir','Não consigo dormir, minha mente não desliga.'],['Sinto ansiedade','Sinto ansiedade e não sei por quê.'],['Hoje é demais','Hoje tudo parece demais.'],['Algo bom','Algo bom aconteceu hoje.']]},
+ar:{'greeting.night':'ساعة هادئة','greeting.morning':'صباح الخير','greeting.afternoon':'نهارك سعيد','greeting.evening':'مساء الخير','heading.idle':'ما الذي يشغل <em>بالكم</em>؟','heading.listening':'تفضلوا &mdash; أنا <em>أستمع</em>.','heading.thinking':'دعوني أفكر <em>لحظة</em>&hellip;','label.idle':'انقر للتحدث \u00b7 أو اكتب','label.listening':'أستمع\u2026','label.thinking':'أفكر\u2026','label.speaking':'كالمورا','cta.talk':'تحدّث إلى كالمورا','cta.talk_listening':'أستمع \u2014 انقر للإيقاف','cta.talk_thinking':'أفكر\u2026','cta.talk_speaking':'أتحدث\u2026','cta.calm':'هدّئني الآن','input.placeholder':'أو اكتب هنا\u2026','dock.talk':'حديث','dock.calm':'هدوء','dock.sounds':'أصوات','dock.journal':'يوميات','dock.you':'أنت','chip.breathe':'تنفس','chip.sounds':'أجواء','chip.ground':'تأريض','chip.calm':'هدوء','chip.journal':'يوميات','chat.empty_sub':'أنا كالمورا. تحدّث أو اكتب &mdash; ما يشغل بالكم يصل إلى هنا.','settings.language':'اللغة','suggestions':[['لا أستطيع النوم','لا أستطيع النوم، عقلي لا يهدأ.'],['أشعر بالقلق','أشعر بالقلق ولا أعرف السبب.'],['أكثر مما أحتمل','كل شيء يبدو أكثر مما أحتمل اليوم.'],['شيء جميل','حدث شيء جميل اليوم.']]}
+};
+function t(k){var L=S.lang||'en';return (STRINGS[L]&&STRINGS[L][k])||STRINGS.en[k]||k}
+function partOfDay(){var h=new Date().getHours();return h<5?'night':h<12?'morning':h<18?'afternoon':'evening'}
+function setTrailingText(el,txt){if(!el)return;var ns=el.childNodes;for(var i=ns.length-1;i>=0;i--){if(ns[i].nodeType===3&&ns[i].nodeValue&&ns[i].nodeValue.replace(/\s/g,'')){ns[i].nodeValue=txt;return}}el.appendChild(document.createTextNode(txt))}
+function headingFor(s){return {idle:t('heading.idle'),listening:t('heading.listening'),thinking:t('heading.thinking'),speaking:''}[s]||''}
+function labelFor(s){return {idle:t('label.idle'),listening:t('label.listening'),thinking:t('label.thinking'),speaking:t('label.speaking')}[s]||''}
+function talkLabelFor(s){return s==='listening'?t('cta.talk_listening'):(s==='thinking'?t('cta.talk_thinking'):(s==='speaking'?t('cta.talk_speaking'):t('cta.talk')))}
+function pickVoiceForLang(L){if(!TTS.ok||!TTS.voices.length)return;var re=new RegExp('^'+L,'i');var pool=TTS.voices.filter(function(v){return re.test(v.lang)});if(!pool.length)pool=TTS.voices;TTS.voice=pool.find(function(v){return v.name===S.voice})||pool[0]}
+function applyLang(){
+  var L=S.lang||'en';if(!STRINGS[L])L='en';S.lang=L;
+  document.documentElement.lang=L;document.documentElement.dir=(langDir(L)==='rtl'?'rtl':'ltr');
+  $('#greeting').textContent=t('greeting.'+partOfDay());
+  var cur=(typeof V!=='undefined'&&V.voice)?V.voice:'idle';
+  $('#heading').innerHTML=headingFor(cur)||'&nbsp;';
+  $('#state-label').textContent=labelFor(cur);
+  $('#talk-cta-label').textContent=talkLabelFor(cur);
+  $('#input-text').setAttribute('placeholder',t('input.placeholder'));
+  setTrailingText($('#calm-cta'),t('cta.calm'));
+  var dk=['dock.talk','dock.calm','dock.sounds','dock.journal','dock.you'];
+  $$('.dock-btn').forEach(function(b,i){var sp=b.querySelector('span');if(sp&&dk[i])sp.textContent=t(dk[i])});
+  var ck=['chip.breathe','chip.sounds','chip.ground','chip.calm','chip.journal'];
+  $$('#quick-chips .chip').forEach(function(c,i){if(ck[i])setTrailingText(c,t(ck[i]))});
+  if(chatMode()){var convo=history.filter(function(m){return m.role==='user'||m.role==='assistant'});if(!convo.length)chatShowEmpty()}
+  var sv=$('#set-lang');if(sv)sv.value=L;
+  pickVoiceForLang(L);
+}
+
 var journal=store.get('calmora:journal',[]);
 var moods=store.get('calmora:moods',[]);
 var stats=Object.assign({talkSec:0,breathSec:0,groundCount:0,calmCount:0,pmrCount:0,sleepMin:0,sndSec:{}},store.get('calmora:stats',{}));
@@ -1103,19 +1156,17 @@ $$('.dock-btn').forEach(function(b){b.addEventListener('click',function(){var n=
 
 /* ══════════════ orb & state machine ══════════════ */
 var V={voice:'idle',busy:false,byVoice:false};
-var HEADINGS={idle:'What&rsquo;s on your <em>mind</em>?',listening:'Go ahead — I&rsquo;m <em>listening</em>.',thinking:'Let me sit with that <em>for a moment</em>&hellip;',speaking:''};
-var LABELS={idle:'tap to talk · type if you prefer',listening:'listening…',thinking:'thinking…',speaking:'calmora'};
 function setVoice(state){
   V.voice=state;
   var cls='state-'+state;document.body.className=document.body.className.replace(/state-\w+/,'')+' '+cls;
-  $('#state-label').textContent=LABELS[state];
+  $('#state-label').textContent=labelFor(state);
   var h=$('#heading');h.style.opacity='0';
-  setTimeout(function(){h.innerHTML=HEADINGS[state]||'&nbsp;';h.style.visibility=state==='speaking'?'hidden':'visible';h.style.opacity='1'},200);
+  setTimeout(function(){h.innerHTML=headingFor(state)||'&nbsp;';h.style.visibility=state==='speaking'?'hidden':'visible';h.style.opacity='1'},200);
   $('#talk-cta').classList.toggle('live',state==='listening');
-  $('#talk-cta-label').textContent=state==='listening'?'Listening — tap to stop':(state==='thinking'?'Thinking…':(state==='speaking'?'Speaking…':'Talk to Calmora'));
+  $('#talk-cta-label').textContent=talkLabelFor(state);
   $('#btn-mic').classList.toggle('live',state==='listening');
   var sb=$('#btn-send');if(state==='thinking'||state==='speaking'){sb.classList.add('stop');sb.innerHTML='<svg aria-hidden="true"><use href="#i-pause"/></svg>'}else{sb.classList.remove('stop');sb.innerHTML='<svg aria-hidden="true"><use href="#i-send"/></svg>'}
-  announce(LABELS[state]);
+  announce(labelFor(state));
 }
 function caption(kind,text){$('#cap-'+kind).textContent=text}
 
@@ -1369,11 +1420,10 @@ var TTS={ok:'speechSynthesis' in window,voice:null,voices:[],pending:0,keep:0,on
 function loadVoices(){
   if(!TTS.ok)return;TTS.voices=speechSynthesis.getVoices()||[];
   var sel=$('#set-voice');sel.innerHTML='';
-  var en=TTS.voices.filter(function(v){return /^en/i.test(v.lang)});
+  var L=S.lang||'en';var re=new RegExp('^'+L,'i');var en=TTS.voices.filter(function(v){return re.test(v.lang)});
   var list=en.length?en:TTS.voices;if(!list.length){sel.innerHTML='<option>System default</option>';return}
   list.forEach(function(v){var o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)});
-  var pref=['Samantha','Serena','Karen','Moira','Google UK English Female','Google US English','Natural','Daniel'];
-  var chosen=list.find(function(v){return v.name===S.voice})||list.find(function(v){return pref.some(function(p){return v.name.indexOf(p)>-1})})||list[0];
+  var chosen=list.find(function(v){return v.name===S.voice})||list[0];
   TTS.voice=chosen;if(sel)sel.value=chosen.name;
 }
 if(TTS.ok){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
@@ -1439,7 +1489,7 @@ function startListening(byVoice){
   V.byVoice=!!byVoice;
   stopSpeaking();caption('ai','');caption('user','');$('#input-text').value='';recLive='';recFinal='';SR.stopping=false;
   var rec;try{rec=new SRCtor()}catch(e){toast('Couldn\u2019t start the microphone.',true);return}
-  SR.rec=rec;rec.lang='en-US';rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=1;
+  SR.rec=rec;rec.lang=langStt(S.lang);rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=1;
   rec.onresult=function(e){
     var interim='';
     for(var i=e.resultIndex;i<e.results.length;i++){var r=e.results[i];if(r.isFinal)recFinal+=r[0].transcript;else interim+=r[0].transcript}
@@ -1599,7 +1649,7 @@ function streamLocal(text,handlers){
    Reasoning never arrives (server emits only content); stripThinking() guards too. */
 function streamRemote(msgs,safetyFlag,handlers){
   var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort()},60000);
-  var req={v:2,model:S.model,messages:msgs,safety:safetyFlag||null,key:S.apiKey||null,stream:true};
+  var req={v:2,model:S.model,messages:msgs,safety:safetyFlag||null,key:S.apiKey||null,lang:S.lang||'en',stream:true};
   var finishReason='stop';
   fetch(S.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(req),signal:ctrl.signal})
   .then(function(res){
@@ -1769,10 +1819,10 @@ function chatClearEmpty(){var e=$('#chat-empty');if(e)e.remove()}
 function chatShowEmpty(){
   var l=$('#chat-list');l.innerHTML='';
   var w=document.createElement('div');w.id='chat-empty';
-  var h=new Date().getHours(),g=h<5?'Still here.':h<12?'Good morning.':h<18?'Good afternoon.':'Good evening.';
-  w.innerHTML='<h3>'+g+'</h3><p>I\u2019m Calmora. Talk or type \u2014 whatever\u2019s on your mind lands right here.</p>';
+  w.innerHTML='<h3>'+t('greeting.'+partOfDay())+'</h3><p>'+t('chat.empty_sub')+'</p>';
   var sg=document.createElement('div');sg.className='chat-suggest';
-  [['I can\u2019t sleep','I can\u2019t sleep, my mind just won\u2019t switch off.'],['I feel anxious','I feel anxious and I\u2019m not sure why.'],['Too much today','Everything feels like too much today.'],['Something good','Something good happened today.']].forEach(function(p){
+  var sugg=t('suggestions');
+  sugg.forEach(function(p){
     var b=document.createElement('button');b.type='button';b.textContent=p[0];
     b.addEventListener('click',function(){if(V.busy)return;var i=$('#input-text');i.value=p[1];var f=$('#input-bar');try{f.requestSubmit()}catch(e){f.dispatchEvent(new Event('submit',{cancelable:true}))}});
     sg.appendChild(b)});
@@ -2163,6 +2213,7 @@ bindSwitch('#set-large','large',function(){document.documentElement.classList.to
 bindSwitch('#set-rm','rm',function(){document.documentElement.classList.toggle('rm',S.rm)});
 $('#set-rate').value=S.rate;fillRange($('#set-rate'));
 $('#set-rate').addEventListener('input',function(){S.rate=parseFloat(this.value);saveSettings();fillRange(this)});
+(function(){var sel=$('#set-lang');if(!sel)return;LANGS.forEach(function(l){var o=document.createElement('option');o.value=l.code;o.textContent=l.name;sel.appendChild(o)});sel.addEventListener('change',function(){S.lang=sel.value;saveSettings();applyLang();toast(langName(S.lang),'good')})})();
 $('#set-voice').addEventListener('change',function(){S.voice=this.value;saveSettings();TTS.voice=TTS.voices.find(function(v){return v.name===S.voice})||TTS.voice;speak('Like this?')});
 $('#btn-settings').addEventListener('click',function(){openSheet('settings')});
 $('#net-pill').addEventListener('click',function(){openSheet('settings')});
@@ -2192,11 +2243,9 @@ window.addEventListener('offline',function(){setNet('off');toast('Offline \u2014
 
 /* ══════════════ init ══════════════ */
 (function init(){
-  var h=new Date().getHours();
-  $('#greeting').textContent=h<5?'a quiet hour':h<12?'good morning':h<18?'good afternoon':'good evening';
   document.documentElement.classList.toggle('lc',!!S.large);document.documentElement.classList.toggle('rm',!!S.rm);
   renderSoundRows();renderJournal();renderTranscript();renderCheckinState();
-  setVoice('idle');setView(S.chatView);setTimeout(checkHealth,900);
+  setVoice('idle');setView(S.chatView);if(!STRINGS[S.lang])S.lang='en';applyLang();setTimeout(checkHealth,900);
   if(!SR.ok){$('#input-text').setAttribute('placeholder','Tell me what\u2019s on your mind\u2026')}
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&TTS.ok){try{speechSynthesis.resume()}catch(e){}}});
   window.addEventListener('beforeunload',persist);setNet(navigator.onLine?'local':'off');
@@ -2204,5 +2253,5 @@ window.addEventListener('offline',function(){setNet('off');toast('Offline \u2014
 })();
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29d213f9afe853d',t:'MTc4NjUxMzA2NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29de07e4fe83c88',t:'MTc4NjUyMDg5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
