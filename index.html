@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<meta name="theme-color" content="#070d0e"/>
+<meta name="theme-color" content="#05060f"/>
 <meta name="description" content="Calmora — a voice-first mental wellness companion. Talk, breathe, listen, sleep. Private by design."/>
 <title>Calmora — a quiet place to think out loud</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='%2317504a'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%2393d6c6' opacity='.7'/%3E%3C/svg%3E"/>
@@ -646,6 +646,13 @@ body.mode-chat #btn-view{color:var(--amber)}
 @media(prefers-reduced-motion:reduce){.msg,.typing i{animation:none !important}}
 html.rm .msg,html.rm .typing i{animation:none !important}
 </style>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Calmora"/>
+<link rel="apple-touch-icon" href="/icon.svg"/>
+<link rel="icon" type="image/svg+xml" href="/icon.svg"/>
 </head>
 <body class="state-idle">
 
@@ -1419,53 +1426,41 @@ function startAnalyser(){
 }
 
 var recFinal='',recLive='',recSilenceT=0;
-/* ============ VOICE INPUT ============
-   Two engines, chosen automatically:
-   • Chromium (Web Speech API available) → live transcript in the prompt bar.
-     Hardened: continuous=false (stops after ONE utterance — this kills the old
-     "never stops" restart loop), onspeechend, a hard time cap, surfaced errors,
-     a double-commit guard, and NO second getUserMedia competing for the mic
-     (that was breaking transcription).
-   • Firefox / no Web Speech API → MediaRecorder + /api/transcribe (Whisper),
-     with local voice-activity detection that auto-sends ~2s after you stop.
-   Both fill the prompt bar and auto-send. */
-function voiceStop(){if(SR.ok)commitFromVoice();else stopRecording(true)}
-function cancelListening(){
-  if(SR.ok){clearTimeout(recSilenceT);clearTimeout(SR.hardT);SR.stopping=true;if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();setVoice('idle')}
-  else stopRecording(false);
-}
+/* Voice input via the Web Speech API (Chromium browsers). Hardened so it reliably
+   transcribes AND stops: continuous=false + onspeechend (stops after one utterance
+   — no restart loop), NO second getUserMedia competing for the mic (that starved
+   transcription), a hard 14s cap, surfaced errors, double-commit guard. Fills the
+   prompt bar live and auto-sends ~2s after you stop talking. */
+function voiceStop(){commitFromVoice()}
+function cancelListening(){clearTimeout(recSilenceT);clearTimeout(SR.hardT);SR.stopping=true;if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();setVoice('idle')}
 function startListening(byVoice){
   if(V.voice==='listening'){voiceStop();return}
+  if(!SR.ok){toast('Voice input needs a Chromium browser (Chrome/Edge/Brave). The text bar works everywhere.',true);$('#input-text').focus();return}
   V.byVoice=!!byVoice;
-  if(!SR.ok)return startRecording();
   stopSpeaking();caption('ai','');caption('user','');$('#input-text').value='';recLive='';recFinal='';SR.stopping=false;
   var rec;try{rec=new SRCtor()}catch(e){toast('Couldn\u2019t start the microphone.',true);return}
   SR.rec=rec;rec.lang='en-US';rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=1;
-  /* NOTE: no rec.onstart→startAnalyser here. A second getUserMedia fights the
-     recognizer for the mic and was causing empty transcriptions. The orb pulses
-     synthetically instead (see micLevelTick). */
   rec.onresult=function(e){
     var interim='';
     for(var i=e.resultIndex;i<e.results.length;i++){var r=e.results[i];if(r.isFinal)recFinal+=r[0].transcript;else interim+=r[0].transcript}
     recLive=(recFinal+' '+interim).trim();
     $('#input-text').value=recLive;caption('user',recLive);if(chatMode()&&recLive)chatDraft(recLive);
     clearTimeout(recSilenceT);
-    if(recLive){recSilenceT=setTimeout(function(){if(V.voice==='listening')commitFromVoice()},2000)}   /* auto-send 2s after you stop */
+    if(recLive){recSilenceT=setTimeout(function(){if(V.voice==='listening')commitFromVoice()},2000)}
   };
   rec.onerror=function(e){
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){SR.stopping=true;setVoice('idle');stopAnalyser();toast('Microphone blocked. Open the site over HTTPS and allow the mic — or type.',true)}
     else if(e.error==='audio-capture'){SR.stopping=true;setVoice('idle');stopAnalyser();toast('No microphone found — the text bar works too.',true)}
     else if(e.error==='network'){SR.stopping=true;setVoice('idle');stopAnalyser();toast('Speech service network error — check your connection or type.',true)}
-    /* no-speech / aborted: onend handles cleanup */
   };
   rec.onspeechend=function(){try{rec.stop()}catch(e){}};
-  rec.onend=function(){if(!SR.stopping)commitFromVoice()};   /* one utterance only — never auto-restart */
+  rec.onend=function(){if(!SR.stopping)commitFromVoice()};
   try{rec.start()}catch(e){toast('Couldn\u2019t start listening — try the text bar.',true);return}
   setVoice('listening');micLevelTick();
-  SR.hardT=setTimeout(function(){if(V.voice==='listening')commitFromVoice()},14000);   /* safety cap */
+  SR.hardT=setTimeout(function(){if(V.voice==='listening')commitFromVoice()},14000);
 }
 function commitFromVoice(){
-  if(V.voice!=='listening')return;                       /* guard: 2s timer + onend can both fire */
+  if(V.voice!=='listening')return;
   clearTimeout(recSilenceT);clearTimeout(SR.hardT);SR.stopping=true;
   var text=($('#input-text').value||recLive||recFinal||'').trim();
   if(SR.rec){try{SR.rec.stop()}catch(e){}}
@@ -1473,63 +1468,6 @@ function commitFromVoice(){
   $('#input-text').value='';caption('user','');
   if(!text){setVoice('idle');return}
   userTurn(text);
-}
-/* ---- recording + Whisper fallback (Firefox / unsupported) ---- */
-function startRecording(){
-  if(V.voice==='listening'){stopRecording(true);return}
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){toast('Voice input isn\u2019t supported in this browser — the text bar works great.',true);$('#input-text').focus();return}
-  stopSpeaking();caption('ai','');caption('user','');$('#input-text').value='';recLive='';recFinal='';SR.stopping=false;SR.committed=false;SR.chunks=[];SR.sendIt=false;
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
-    if(!axEnsure()){st.getTracks().forEach(function(t){t.stop()});toast('Audio engine unavailable.',true);return}
-    SR.stream=st;var src=AX.ctx.createMediaStreamSource(st);SR.analyser=AX.ctx.createAnalyser();SR.analyser.fftSize=512;src.connect(SR.analyser);
-    SR.recMime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'');
-    var mr;try{mr=new MediaRecorder(st,SR.recMime?{mimeType:SR.recMime}:undefined)}catch(e){try{mr=new MediaRecorder(st)}catch(e2){st.getTracks().forEach(function(t){t.stop()});toast('Recording not supported — try the text bar.',true);return}}
-    SR.mr=mr;
-    mr.ondataavailable=function(ev){if(ev.data&&ev.data.size)SR.chunks.push(ev.data)};
-    mr.onstop=function(){
-      stopAnalyser();
-      if(SR.committed||!SR.sendIt){setVoice('idle');return}
-      var blob=new Blob(SR.chunks,{type:SR.recMime||'audio/webm'});
-      if(!blob.size){setVoice('idle');toast('Didn\u2019t catch that — try again.');return}
-      transcribeBlob(blob);
-    };
-    try{mr.start()}catch(e){toast('Couldn\u2019t start recording.',true);return}
-    setVoice('listening');micLevelTick();
-    SR.vadSpoke=false;SR.lastLoud=performance.now();
-    SR.hardT=setTimeout(function(){if(V.voice==='listening')stopRecording(true)},14000);
-    vadTick();
-  }).catch(function(){toast('Microphone access was blocked — allow it in browser settings, or type.',true)});
-}
-function stopRecording(send){
-  if(V.voice!=='listening')return;
-  clearTimeout(SR.hardT);cancelAnimationFrame(SR.vadRaf);SR.vadRaf=0;SR.stopping=true;SR.sendIt=!!send;
-  var mr=SR.mr;
-  if(mr&&mr.state!=='inactive'){try{mr.stop()}catch(e){stopAnalyser();setVoice('idle')}}
-  else{stopAnalyser();setVoice('idle')}
-  caption('user','');
-}
-function vadTick(){
-  if(V.voice!=='listening'||!SR.analyser){SR.vadRaf=0;return}
-  var d=new Uint8Array(SR.analyser.fftSize);SR.analyser.getByteTimeDomainData(d);
-  var sum=0;for(var i=0;i<d.length;i++){var v=(d[i]-128)/128;sum+=v*v}
-  var rms=Math.sqrt(sum/d.length);
-  if(rms>0.085){SR.lastLoud=performance.now();SR.vadSpoke=true}
-  if(SR.vadSpoke&&performance.now()-SR.lastLoud>2200){stopRecording(true);return}   /* ~2s silence → send */
-  SR.vadRaf=requestAnimationFrame(vadTick);
-}
-function transcribeBlob(blob){
-  setVoice('thinking');caption('user','');
-  var ep=S.endpoint.replace(/\/chat\/?$/,'/transcribe');
-  var fd=new FormData();fd.append('audio',blob,'voice.webm');
-  var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort()},25000);
-  fetch(ep,{method:'POST',body:fd,signal:ctrl.signal}).then(function(r){clearTimeout(to);if(!r.ok)throw new Error('http_'+r.status);return r.text()})
-  .then(function(txt){
-    SR.committed=true;
-    var text=String(txt||'').replace(/<[^>]*>/g,'').trim();
-    if(!text){setVoice('idle');toast('Didn\u2019t catch that — try again.');return}
-    $('#input-text').value='';V.byVoice=true;userTurn(text);
-  })
-  .catch(function(){clearTimeout(to);setVoice('idle');toast('Transcription failed — deploy /api/transcribe with a key, or type.',true)});
 }
 function talkToggle(){
   if(V.voice==='listening'){voiceStop()}
@@ -1655,13 +1593,14 @@ function streamLocal(text,handlers){
   return function(){clearInterval(iv)};
 }
 
-/* Calls your /api/chat server (Cloudflare Pages Function). The server adds the
-   system prompt, holds the key + rate limits, and streams NDJSON events
-   ({type:'meta'|'delta'|'error'|'done'}). Reasoning never arrives here (the server
-   emits only delta.content) and stripThinking() guards captions/speech as well. */
-function streamRemote(text,safetyFlag,handlers){
+/* Calls your /api/chat server. Sends the working message list — which may include
+   assistant tool_calls + tool results for the agent loop. Streams NDJSON:
+   delta (text), meta, tool (a completed tool call), done(finish_reason).
+   Reasoning never arrives (server emits only content); stripThinking() guards too. */
+function streamRemote(msgs,safetyFlag,handlers){
   var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort()},60000);
-  var req={v:1,model:S.model,messages:histMessages(),safety:safetyFlag||null,key:S.apiKey||null,stream:true};
+  var req={v:2,model:S.model,messages:msgs,safety:safetyFlag||null,key:S.apiKey||null,stream:true};
+  var finishReason='stop';
   fetch(S.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(req),signal:ctrl.signal})
   .then(function(res){
     clearTimeout(to);
@@ -1672,21 +1611,57 @@ function streamRemote(text,safetyFlag,handlers){
       while((idx=buf.indexOf('\n'))>=0){var line=buf.slice(0,idx).trim();buf=buf.slice(idx+1);if(!line)continue;
         var evt;try{evt=JSON.parse(line)}catch(e){continue}
         if(evt.type==='delta'&&evt.text)handlers.delta(evt.text);
+        else if(evt.type==='tool'&&handlers.tool)handlers.tool(evt);
         else if(evt.type==='meta')handlers.meta&&handlers.meta(evt);
         else if(evt.type==='error')throw new Error(evt.code||'api_error');
-        else if(evt.type==='done')return;
+        else if(evt.type==='done'){if(evt.finish_reason)finishReason=evt.finish_reason;return}
       }return pump();
     })}
     return pump();
   })
-  .then(function(){clearTimeout(to);handlers.done()})
+  .then(function(){clearTimeout(to);handlers.done(finishReason)})
   .catch(function(err){clearTimeout(to);var m=err&&err.name==='AbortError'?'timeout':(err&&err.message?err.message:'network');handlers.error(m)});
   return function(){try{ctrl.abort()}catch(e){}};
 }
 
+/* ============ Voice Agent tools (run in the browser) ============ */
+function moodLevelFromName(name){var m={Heavy:1,Low:2,Okay:3,Good:4,Light:5};return m[name]||null}
+function soundName(id){var l=LAYERS.filter(function(d){return d.id===id})[0];return l?l.name:id}
+function executeTool(name,argsRaw){
+  var args={};try{args=JSON.parse(argsRaw||'{}')}catch(e){args={}}
+  try{
+    if(name==='play_sound'){
+      var id=args.sound;
+      if(engines[id]){LAYERS.forEach(function(d){engines[d.id].stop()});engines[id].start();renderSoundRows();toast('Playing '+soundName(id),'good');return 'Started the '+soundName(id)+' soundscape in the browser.'}
+      return 'That sound is not available.';
+    }
+    if(name==='stop_sounds'){LAYERS.forEach(function(d){engines[d.id].stop()});renderSoundRows();toast('Sounds stopped');return 'Stopped all sounds.'}
+    if(name==='note_thought'){
+      var t=String(args.text||'').trim();
+      if(!t)return 'Nothing to save.';
+      journal.unshift({id:uid(),ts:Date.now(),text:t,mood:moodLevelFromName(args.mood)});persist();
+      var dj=$('#dock-j');if(dj)dj.hidden=false;toast('Saved a thought to your journal','good');
+      return 'Saved the note to the journal.';
+    }
+    if(name==='start_breathing'){
+      var pat=args.pattern&&BPATTERNS[args.pattern]?args.pattern:'coherent';
+      BR.pat=pat;$$('#br-pattern button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-p')===pat)});
+      openSheet('breathe');setTimeout(function(){try{runBreathing()}catch(e){}},350);
+      return 'Started a '+pat+' breathing exercise on screen.';
+    }
+    if(name==='start_grounding'){openSheet('ground');return 'Opened the 5-4-3-2-1 grounding exercise.'}
+    if(name==='sleep_mode'){
+      var mins=args.minutes||15;var sm=$('#sleep-mins');if(sm)sm.value=String(clamp(mins,5,60));
+      if(args.sound&&engines[args.sound]){LAYERS.forEach(function(d){engines[d.id].stop()});engines[args.sound].start()}
+      try{startSleep()}catch(e){}
+      return 'Started sleep mode.';
+    }
+  }catch(e){return 'Tool error.'}
+  return 'Unknown tool.';
+}
+
 /* turn engine */
 var turnToken=0,sayBuf='',fullReply='',rawReply='',spokenLen=0,turnCancel=null,usedLocal=false;
-/* strip chain-of-thought / reasoning blocks so they never reach captions or speech */
 function stripThinking(s){
   s=s.replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi,'');
   s=s.replace(/<reasoning\b[^>]*>[\s\S]*?<\/reasoning>/gi,'');
@@ -1699,17 +1674,16 @@ function userTurn(text){
   stopSpeaking();caption('ai','');caption('user','You: '+text);
   var safety=crisisCheck(text)?'crisis':null;pushHistory('user',text);setVoice('thinking');
   if(chatMode()){var draft=$('#chat-list').querySelector('div.msg.user.draft');if(draft){draft.classList.remove('draft');draft.style.opacity='1';draft.querySelector('.bub').textContent=text}else{chatAddUser(text)}caption('user','');chatStreamStart();}
-  sayBuf='';fullReply='';rawReply='';spokenLen=0;usedLocal=false;
   var t0=Date.now(),my=turnToken;
   var talkIv=setInterval(function(){if(turnToken===my)stats.talkSec+=2},2000);
+  var msgs=histMessages();               /* includes the just-pushed user message */
+  function resetReply(){sayBuf='';fullReply='';rawReply='';spokenLen=0;usedLocal=false}
   function speakNow(chunk,isLast){if(!S.speak||!TTS.ok){if(isLast)afterSpeech();return}speak(chunk,isLast?afterSpeech:null);if(V.voice!=='speaking')setVoice('speaking')}
   function afterSpeech(){if(turnToken===my)finishTurn(false)}
   function onDelta(t){
     if(turnToken!==my)return;
     if(V.voice==='thinking')setVoice('speaking');
-    rawReply+=t;
-    var clean=stripThinking(rawReply);
-    fullReply=clean;
+    rawReply+=t;var clean=stripThinking(rawReply);fullReply=clean;
     if(clean.trim())caption('ai',clean);
     if(chatMode())chatStreamText(clean);
     if(clean.length>spokenLen){sayBuf+=clean.slice(spokenLen);spokenLen=clean.length;flushSay(false)}
@@ -1718,31 +1692,50 @@ function userTurn(text){
     if(!final){var m=sayBuf.match(/^[\s\S]*?[.!?…]["')\]]*([\s\n]|$)/);if(!m)return;var sent=m[0];sayBuf=sayBuf.slice(sent.length);speakNow(stripThinking(sent),false)}
     else{var rest=stripThinking(sayBuf).trim();sayBuf='';if(rest){speakNow(rest,true)}else if(S.speak&&TTS.ok&&TTS.pending>0){TTS.onIdle=afterSpeech;armIdleSafe()}else{afterSpeech()}}
   }
-  function onDone(){
-    if(turnToken!==my)return;clearInterval(talkIv);persist();
+  function finishRound(pushHist){
+    clearInterval(talkIv);
     var clean=stripThinking(rawReply);fullReply=clean.trim();
-    if(fullReply)pushHistory('assistant',fullReply,usedLocal?'local':null);
+    if(pushHist&&fullReply)pushHistory('assistant',fullReply,usedLocal?'local':null);
     if(chatMode())chatStreamFinalize();
     if(clean.length>spokenLen){sayBuf+=clean.slice(spokenLen);spokenLen=clean.length}
     flushSay(true);
   }
-  var handlers={
-    meta:function(evt){if(evt.model&&evt.model.indexOf('local')===0)usedLocal=true},
-    delta:onDelta,
-    done:onDone,
-    error:function(code){
-      if(turnToken!==my)return;clearInterval(talkIv);
-      if(code==='rate_limited')toast('The AI is busy right now — a breath\u2019s pause, then try again.','warn');
-      else if(code==='bad_key')toast('Your API key wasn\u2019t accepted — check it in Settings.','warn');
-      else if(code==='timeout')toast('That took too long. Try again.','warn');
-      else if(code==='no_key')toast('No AI key set — add a free OpenRouter key in Settings for full replies. The offline companion will answer for now.','warn');
-      else toast('Couldn\u2019t reach the AI — switching to the offline companion.','warn');
-      setNet('local');usedLocal=true;
-      turnCancel=streamLocal(text,{delta:onDelta,done:onDone});
-    }
-  };
-  if(!navigator.onLine){handlers.error('network');return}
-  turnCancel=streamRemote(text,safety,handlers);
+  function runLocalFallback(){
+    clearInterval(talkIv);setNet('local');usedLocal=true;resetReply();setVoice('thinking');
+    turnCancel=streamLocal(text,{delta:onDelta,done:function(){if(turnToken!==my)return;finishRound(true)}});
+  }
+  function step(round){
+    if(turnToken!==my)return;
+    var toolCalls=[];
+    resetReply();setVoice('thinking');
+    turnCancel=streamRemote(msgs,safety,{
+      meta:function(evt){if(evt.model&&evt.model.indexOf('local')===0)usedLocal=true},
+      delta:onDelta,
+      tool:function(tc){tc.result=executeTool(tc.name,tc.args);toolCalls.push(tc)},
+      done:function(finishReason){
+        if(turnToken!==my)return;
+        /* tool-only turn → run the tools (already done) and ask for a spoken reply (cap 3 rounds) */
+        if(toolCalls.length&&round<3&&!stripThinking(rawReply).trim()){
+          msgs.push({role:'assistant',content:fullReply||'',tool_calls:toolCalls.map(function(tc,i){return{id:tc.id||('call_'+my+'_'+i),type:'function',function:{name:tc.name,arguments:tc.args||'{}'}}})});
+          toolCalls.forEach(function(tc,i){msgs.push({role:'tool',tool_call_id:tc.id||('call_'+my+'_'+i),name:tc.name,content:String(tc.result||'ok')})});
+          step(round+1);
+          return;
+        }
+        persist();finishRound(true);
+      },
+      error:function(code){
+        if(turnToken!==my)return;
+        if(code==='rate_limited')toast('The AI is busy right now — a breath\u2019s pause, then try again.','warn');
+        else if(code==='bad_key')toast('Your API key wasn\u2019t accepted — check it in Settings.','warn');
+        else if(code==='timeout')toast('That took too long. Try again.','warn');
+        else if(code==='no_key')toast('No AI key set — add a free OpenRouter key in Settings for full replies. The offline companion will answer for now.','warn');
+        else toast('Couldn\u2019t reach the AI — switching to the offline companion.','warn');
+        runLocalFallback();
+      }
+    });
+  }
+  if(!navigator.onLine){runLocalFallback();return}
+  step(1);
 }
 function finishTurn(aborted){
   turnToken++;V.busy=false;turnCancel=null;setVoice('idle');caption('user','');
@@ -2207,8 +2200,9 @@ window.addEventListener('offline',function(){setNet('off');toast('Offline \u2014
   if(!SR.ok){$('#input-text').setAttribute('placeholder','Tell me what\u2019s on your mind\u2026')}
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&TTS.ok){try{speechSynthesis.resume()}catch(e){}}});
   window.addEventListener('beforeunload',persist);setNet(navigator.onLine?'local':'off');
+  if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){})}
 })();
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29cf5f1fcf73a5b',t:'MTc4NjUxMTI5MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29d213f9afe853d',t:'MTc4NjUxMzA2NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
