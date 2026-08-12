@@ -1419,48 +1419,124 @@ function startAnalyser(){
 }
 
 var recFinal='',recLive='',recSilenceT=0;
+/* ============ VOICE INPUT ============
+   Two engines, chosen automatically:
+   • Chromium (Web Speech API available) → live transcript in the prompt bar.
+     Hardened: continuous=false (stops after ONE utterance — this kills the old
+     "never stops" restart loop), onspeechend, a hard time cap, surfaced errors,
+     a double-commit guard, and NO second getUserMedia competing for the mic
+     (that was breaking transcription).
+   • Firefox / no Web Speech API → MediaRecorder + /api/transcribe (Whisper),
+     with local voice-activity detection that auto-sends ~2s after you stop.
+   Both fill the prompt bar and auto-send. */
+function voiceStop(){if(SR.ok)commitFromVoice();else stopRecording(true)}
+function cancelListening(){
+  if(SR.ok){clearTimeout(recSilenceT);clearTimeout(SR.hardT);SR.stopping=true;if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();setVoice('idle')}
+  else stopRecording(false);
+}
 function startListening(byVoice){
-  if(V.voice==='listening'){commitFromVoice();return}
-  if(!SR.ok){toast('Voice input isn\u2019t supported in this browser — the text bar works great.',true);$('#input-text').focus();return}
-  stopSpeaking();caption('ai','');caption('user','');$('#input-text').value='';recLive='';
-  recFinal='';V.byVoice=!!byVoice;SR.stopping=false;
+  if(V.voice==='listening'){voiceStop();return}
+  V.byVoice=!!byVoice;
+  if(!SR.ok)return startRecording();
+  stopSpeaking();caption('ai','');caption('user','');$('#input-text').value='';recLive='';recFinal='';SR.stopping=false;
   var rec;try{rec=new SRCtor()}catch(e){toast('Couldn\u2019t start the microphone.',true);return}
-  SR.rec=rec;rec.continuous=true;rec.interimResults=true;rec.lang='en-US';rec.maxAlternatives=1;
-  rec.onstart=function(){/* recognizer grabbed the mic — now attach the level meter */setTimeout(startAnalyser,250)};
+  SR.rec=rec;rec.lang='en-US';rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=1;
+  /* NOTE: no rec.onstart→startAnalyser here. A second getUserMedia fights the
+     recognizer for the mic and was causing empty transcriptions. The orb pulses
+     synthetically instead (see micLevelTick). */
   rec.onresult=function(e){
-    var interim='';for(var i=e.resultIndex;i<e.results.length;i++){var r=e.results[i];if(r.isFinal)recFinal+=r[0].transcript;else interim+=r[0].transcript}
+    var interim='';
+    for(var i=e.resultIndex;i<e.results.length;i++){var r=e.results[i];if(r.isFinal)recFinal+=r[0].transcript;else interim+=r[0].transcript}
     recLive=(recFinal+' '+interim).trim();
-    $('#input-text').value=recLive;            /* recognised speech appears live in the prompt bar */
-    caption('user',recLive);if(chatMode()&&recLive)chatDraft(recLive);
-    /* auto-send the prompt bar 2 seconds after the user stops talking */
-    clearTimeout(recSilenceT);if(recLive){recSilenceT=setTimeout(function(){if(V.voice==='listening'&&($('#input-text').value.trim()||recLive))commitFromVoice()},2000)}
+    $('#input-text').value=recLive;caption('user',recLive);if(chatMode()&&recLive)chatDraft(recLive);
+    clearTimeout(recSilenceT);
+    if(recLive){recSilenceT=setTimeout(function(){if(V.voice==='listening')commitFromVoice()},2000)}   /* auto-send 2s after you stop */
   };
   rec.onerror=function(e){
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){setVoice('idle');stopAnalyser();toast('Microphone access was blocked — check your browser settings, or just type.',true)}
-    else if(e.error==='audio-capture'){setVoice('idle');stopAnalyser();toast('No microphone found — the text bar is right there.',true)}
-    /* no-speech / aborted / network: ignore — the recognizer restarts on its own */
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){SR.stopping=true;setVoice('idle');stopAnalyser();toast('Microphone blocked. Open the site over HTTPS and allow the mic — or type.',true)}
+    else if(e.error==='audio-capture'){SR.stopping=true;setVoice('idle');stopAnalyser();toast('No microphone found — the text bar works too.',true)}
+    else if(e.error==='network'){SR.stopping=true;setVoice('idle');stopAnalyser();toast('Speech service network error — check your connection or type.',true)}
+    /* no-speech / aborted: onend handles cleanup */
   };
-  rec.onend=function(){
-    /* Chrome ends the recognizer after silence; restart it (small delay avoids InvalidStateError)
-       only while we are still meant to be listening */
-    if(V.voice==='listening'&&!SR.stopping){setTimeout(function(){if(V.voice==='listening'&&!SR.stopping){try{rec.start()}catch(err){}}},280)}
-  };
+  rec.onspeechend=function(){try{rec.stop()}catch(e){}};
+  rec.onend=function(){if(!SR.stopping)commitFromVoice()};   /* one utterance only — never auto-restart */
   try{rec.start()}catch(e){toast('Couldn\u2019t start listening — try the text bar.',true);return}
-  setVoice('listening');micLevelTick(); /* begin synthetic pulse now; real meter takes over on onstart */
+  setVoice('listening');micLevelTick();
+  SR.hardT=setTimeout(function(){if(V.voice==='listening')commitFromVoice()},14000);   /* safety cap */
 }
 function commitFromVoice(){
-  clearTimeout(recSilenceT);SR.stopping=true;
-  var text=($('#input-text').value||recLive||recFinal||'').trim();   /* send whatever the prompt bar holds */
-  if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();
-  $('#input-text').value='';caption('user','');                     /* clear the bar once it's on its way */
+  if(V.voice!=='listening')return;                       /* guard: 2s timer + onend can both fire */
+  clearTimeout(recSilenceT);clearTimeout(SR.hardT);SR.stopping=true;
+  var text=($('#input-text').value||recLive||recFinal||'').trim();
+  if(SR.rec){try{SR.rec.stop()}catch(e){}}
+  stopAnalyser();
+  $('#input-text').value='';caption('user','');
   if(!text){setVoice('idle');return}
   userTurn(text);
 }
+/* ---- recording + Whisper fallback (Firefox / unsupported) ---- */
+function startRecording(){
+  if(V.voice==='listening'){stopRecording(true);return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){toast('Voice input isn\u2019t supported in this browser — the text bar works great.',true);$('#input-text').focus();return}
+  stopSpeaking();caption('ai','');caption('user','');$('#input-text').value='';recLive='';recFinal='';SR.stopping=false;SR.committed=false;SR.chunks=[];SR.sendIt=false;
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
+    if(!axEnsure()){st.getTracks().forEach(function(t){t.stop()});toast('Audio engine unavailable.',true);return}
+    SR.stream=st;var src=AX.ctx.createMediaStreamSource(st);SR.analyser=AX.ctx.createAnalyser();SR.analyser.fftSize=512;src.connect(SR.analyser);
+    SR.recMime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'');
+    var mr;try{mr=new MediaRecorder(st,SR.recMime?{mimeType:SR.recMime}:undefined)}catch(e){try{mr=new MediaRecorder(st)}catch(e2){st.getTracks().forEach(function(t){t.stop()});toast('Recording not supported — try the text bar.',true);return}}
+    SR.mr=mr;
+    mr.ondataavailable=function(ev){if(ev.data&&ev.data.size)SR.chunks.push(ev.data)};
+    mr.onstop=function(){
+      stopAnalyser();
+      if(SR.committed||!SR.sendIt){setVoice('idle');return}
+      var blob=new Blob(SR.chunks,{type:SR.recMime||'audio/webm'});
+      if(!blob.size){setVoice('idle');toast('Didn\u2019t catch that — try again.');return}
+      transcribeBlob(blob);
+    };
+    try{mr.start()}catch(e){toast('Couldn\u2019t start recording.',true);return}
+    setVoice('listening');micLevelTick();
+    SR.vadSpoke=false;SR.lastLoud=performance.now();
+    SR.hardT=setTimeout(function(){if(V.voice==='listening')stopRecording(true)},14000);
+    vadTick();
+  }).catch(function(){toast('Microphone access was blocked — allow it in browser settings, or type.',true)});
+}
+function stopRecording(send){
+  if(V.voice!=='listening')return;
+  clearTimeout(SR.hardT);cancelAnimationFrame(SR.vadRaf);SR.vadRaf=0;SR.stopping=true;SR.sendIt=!!send;
+  var mr=SR.mr;
+  if(mr&&mr.state!=='inactive'){try{mr.stop()}catch(e){stopAnalyser();setVoice('idle')}}
+  else{stopAnalyser();setVoice('idle')}
+  caption('user','');
+}
+function vadTick(){
+  if(V.voice!=='listening'||!SR.analyser){SR.vadRaf=0;return}
+  var d=new Uint8Array(SR.analyser.fftSize);SR.analyser.getByteTimeDomainData(d);
+  var sum=0;for(var i=0;i<d.length;i++){var v=(d[i]-128)/128;sum+=v*v}
+  var rms=Math.sqrt(sum/d.length);
+  if(rms>0.085){SR.lastLoud=performance.now();SR.vadSpoke=true}
+  if(SR.vadSpoke&&performance.now()-SR.lastLoud>2200){stopRecording(true);return}   /* ~2s silence → send */
+  SR.vadRaf=requestAnimationFrame(vadTick);
+}
+function transcribeBlob(blob){
+  setVoice('thinking');caption('user','');
+  var ep=S.endpoint.replace(/\/chat\/?$/,'/transcribe');
+  var fd=new FormData();fd.append('audio',blob,'voice.webm');
+  var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort()},25000);
+  fetch(ep,{method:'POST',body:fd,signal:ctrl.signal}).then(function(r){clearTimeout(to);if(!r.ok)throw new Error('http_'+r.status);return r.text()})
+  .then(function(txt){
+    SR.committed=true;
+    var text=String(txt||'').replace(/<[^>]*>/g,'').trim();
+    if(!text){setVoice('idle');toast('Didn\u2019t catch that — try again.');return}
+    $('#input-text').value='';V.byVoice=true;userTurn(text);
+  })
+  .catch(function(){clearTimeout(to);setVoice('idle');toast('Transcription failed — deploy /api/transcribe with a key, or type.',true)});
+}
 function talkToggle(){
-  if(V.voice==='listening'){commitFromVoice()}
+  if(V.voice==='listening'){voiceStop()}
   else if(V.busy){toast('One moment — Calmora is still answering.')}
   else startListening(true);
 }
+
 $('#talk-cta').addEventListener('click',function(){
   if(V.voice==='thinking'||V.voice==='speaking'){stopSpeaking();TTS.pending=0;if(turnCancel){try{turnCancel()}catch(e){}}turnCancel=null;finishTurn(true);return}
   talkToggle();
@@ -1682,7 +1758,7 @@ $('#input-bar').addEventListener('submit',function(e){
   if(V.busy){stopGeneration();return}
   var inp=$('#input-text'),t=inp.value.trim();if(!t)return;
   inp.value='';V.byVoice=false;
-  if(V.voice==='listening'){SR.stopping=true;if(SR.rec){try{SR.rec.stop()}catch(err){}}stopAnalyser()}
+  if(V.voice==='listening')cancelListening()
   stopSpeaking();userTurn(t);
 });
 function stopGeneration(){
@@ -1757,7 +1833,7 @@ $('#tx-close').addEventListener('click',function(){$('#tx-panel').classList.remo
 $('#tx-clear').addEventListener('click',function(){newConversation();$('#tx-panel').classList.remove('open')});
 $('#tx-export').addEventListener('click',function(){download('calmora-transcript.json',JSON.stringify(history,null,2));toast('Transcript exported.','good')});
 function newConversation(){
-  turnToken++;V.busy=false;SR.stopping=true;if(SR.rec){try{SR.rec.stop()}catch(e){}}stopAnalyser();stopSpeaking();
+  turnToken++;V.busy=false;if(V.voice==='listening')cancelListening();stopSpeaking();
   if(turnCancel){try{turnCancel()}catch(e){}}turnCancel=null;
   history=[];persist();setVoice('idle');caption('user','');caption('ai','');renderTranscript();chatClearStream();renderChat();
   toast('Fresh start. Calmora\u2019s here whenever you are.');
@@ -2134,5 +2210,5 @@ window.addEventListener('offline',function(){setNet('off');toast('Offline \u2014
 })();
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29cd457af3cb79c',t:'MTc4NjUwOTkxNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29cf5f1fcf73a5b',t:'MTc4NjUxMTI5MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
