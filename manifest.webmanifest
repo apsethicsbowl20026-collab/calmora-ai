@@ -1,0 +1,17 @@
+{
+  "name": "Calmora — a quiet place to think out loud",
+  "short_name": "Calmora",
+  "description": "A voice-first wellbeing companion that listens, comforts with sound, journals your thoughts, and helps you breathe and sleep.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#05060f",
+  "theme_color": "#05060f",
+  "categories": ["health", "lifestyle", "productivity"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
