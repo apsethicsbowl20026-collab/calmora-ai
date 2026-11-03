@@ -37,6 +37,7 @@ Most "AI wellness" apps are thin chat wrappers. Calmora is a **complete, calm, t
 ## 🧭 Table of contents
 
 - [Highlights](#-highlights)
+- [Launch film](#-launch-film)
 - [The orb](#-the-orb)
 - [Features](#-features)
 - [Quick start](#-quick-start-60-seconds)
@@ -73,6 +74,16 @@ Most "AI wellness" apps are thin chat wrappers. Calmora is a **complete, calm, t
 | 📴 **Offline PWA** | Installable, runs offline (the shell + every wellness tool work without a connection). |
 | 🔒 **Local-first** | Journal, moods, stats, and history never leave your device. |
 | 🚀 **One file, no build** | The whole app is a single `index.html`. Deploy anywhere. |
+
+---
+
+## 🎬 Launch film
+
+A 30-second motion-graphics launch film lives in [`video/`](video/) — no build step, no external assets, in keeping with the project:
+
+- **[`video/calmora-launch.html`](video/calmora-launch.html)** — the film. 1920×1080 at 120 BPM, all visuals drawn in Canvas 2D, score synthesised live with Web Audio, four voiceover clips, chapter scrubbing, PNG frame export and WebM recording. Serve the repo and open `/video/calmora-launch.html` (voiceover needs `http`, not `file://`).
+- **[`video/PRODUCTION_BLUEPRINT.md`](video/PRODUCTION_BLUEPRINT.md)** — the full scene-by-scene prompt blueprint: brand profile and magic moment, VO script with timecodes, camera / lighting / audio cues, AI asset prompts, beat map and compliance notes.
+- **[`video/storyboard.png`](video/storyboard.png)** — 12 captioned key frames pulled directly from the master.
 
 ---
 
