@@ -1,0 +1,19 @@
+{
+  "started_at_utc": "2026-11-04T08:20:24.040558+00:00",
+  "ended_at_utc": "2026-11-04T08:20:30.988202+00:00",
+  "command": "npm test",
+  "exit_code": 0,
+  "branch": "arena/21394eaf-calmora-ai",
+  "commit": "e7ed404594173f266fd72c0ad5a2ba54db94e902",
+  "node": "v22.22.3",
+  "npm": "10.9.8",
+  "platform": "Linux-6.1.158+-x86_64-with-glibc2.36",
+  "test_file": "tests/workspace.test.js",
+  "scope": "Automated Node.js/jsdom tests with simulated speech and network responses; not human usability testing.",
+  "sha256": {
+    "tests/workspace.test.js": "ad1b26adaba902e8c8d5c8f561f4dead2a44e9f547e3999dabf9318f34e4de6d",
+    "index.html": "4c861b80422d5f1cba7fd2a4e1170a77dda8603ac32b321a31ad97551f2dcb35",
+    "package-lock.json": "c26855e1f115163101bb73a7825f124cd9d3888aa8d0ecc88f684e3261aaf367",
+    "logbook/evidence/automated-tests-2026-11-04.txt": "9b47f60ba950b25c2abfb05f0d9f842ba7250f5733a2c4c5444a66aceee8da3e"
+  }
+}

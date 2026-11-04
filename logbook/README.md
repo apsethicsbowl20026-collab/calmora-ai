@@ -1,3 +1,29 @@
+## New evidence supplement — 4 November 2026
+
+- [Test logs and interview notes — PDF](PRIMOSHU-Test-Logs-and-Interview-Notes.pdf)
+- [Editable Word copy](PRIMOSHU-Test-Logs-and-Interview-Notes.docx)
+- [Markdown source](PRIMOSHU-Test-Logs-and-Interview-Notes.md)
+- [Captured automated test output](evidence/automated-tests-2026-11-04.txt)
+- [Run metadata and file checksums](evidence/run-metadata-2026-11-04.json)
+
+This supplement records a fresh **12/12 automated test pass**, one requester's
+written feedback, unexecuted manual-test plans, and an unfilled interview sheet.
+It is **not evidence of newly conducted participant interviews**. The original
+logbook's drafted interview dialogue and unverified human-testing statements must
+not be treated as measured results. See the supplement's submission guidance.
+
+To rebuild just the supplement (leaving the original exports unchanged):
+
+```bash
+python -m venv .venv
+.venv/bin/pip install python-docx reportlab
+.venv/bin/python logbook/build_evidence.py
+```
+
+The PDF export uses the system DejaVu fonts, as does the existing builder.
+
+---
+
 # Calmora — AI Project Logbook
 
 A completed **AI Project Logbook** for this repository, following the structure of the
