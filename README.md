@@ -571,3 +571,38 @@ server-managed OpenRouter secrets on shared or managed devices.
 Design rationale: explicit turn feedback, short spoken replies, interruption and
 text alternatives follow the voice interaction principles discussed in
 [Voice User Interface Design: A Practical Guide](https://refact.co/insights/digital-product/voice-user-interface-design).
+
+## Nightfall appearance
+
+Calmora now opens in **dark mode by default**, including on devices set to light.
+The header and Settings → Appearance offer Dark, Light, and System. The preference
+is saved as `calmora:theme`, applied in the document head before stylesheet paint,
+and synchronized between the two controls and across tabs. System mode follows
+live OS appearance changes; an explicit selection does not. Browser/PWA chrome
+uses the resolved theme color, and offline caches include the new stylesheet and
+fonts.
+
+The Nightfall design uses green-charcoal surfaces, off-white text, a restrained
+sage action color, a pearlescent voice orb, and low-amplitude motion. Listening and
+speaking keep text labels as well as animated feedback. Both OS reduced-motion
+and the existing in-app Reduce Motion setting disable animation. Fraunces and
+Karla are locally hosted under `assets/fonts` with their SIL Open Font licenses;
+the interface no longer depends on Google Fonts requests. Latin subsets are
+bundled; other scripts use the existing system fallback fonts.
+
+Design references:
+- [WCAG 2.2 Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html): key text pairs are tested at the normal-text 4.5:1 threshold. This is not a claim of complete WCAG conformance.
+- [WCAG Animation from Interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html): decorative motion is nonessential and can be disabled.
+
+Validation: `npm test` includes first-paint defaults, stored preferences, selector
+synchronization, system appearance changes, and core dark text contrast. Chromium
+smoke checks covered 320, 390, 768, 1280, and 1440px widths (no horizontal overflow),
+mobile settings, self-hosted font loading, theme persistence, live OS appearance,
+reduced motion, and mood persistence. Existing simulated call-flow tests remain
+passing. Real-device voice QA remains necessary as documented above.
+
+## Product branding
+
+The user-facing product is **PRIMØSHU by Calmora** (short name: **PRIMØSHU**).
+Existing storage keys, repository names, and internal theme APIs remain unchanged
+to preserve saved data and compatibility.

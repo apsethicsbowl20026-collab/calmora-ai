@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { JSDOM, VirtualConsole } from 'jsdom';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-function workspace({ recognition = false, streaming = false, direct = false } = {}) {
+function workspace({ recognition = false, streaming = false, direct = false, savedTheme, systemDark = false } = {}) {
   const errors = [];
   const console = new VirtualConsole();
   console.on('jsdomError', error => errors.push(error.message));
@@ -20,7 +20,11 @@ function workspace({ recognition = false, streaming = false, direct = false } = 
         }
         return { ok: false, status: 503, json: async () => ({}), text: async () => '' };
       };
-      w.matchMedia = () => ({ matches: false, addEventListener() {} });
+      if(savedTheme)w.localStorage.setItem('calmora:theme',savedTheme);
+      let mediaListener;
+      const media={matches:systemDark,addEventListener(type,fn){mediaListener=fn}};
+      w.changeSystemTheme=function(dark){media.matches=dark;mediaListener?.()};
+      w.matchMedia = query => query.includes('prefers-color-scheme')?media:{matches:false,addEventListener(){}};
       w.AbortController = AbortController;
       if (recognition) w.SpeechRecognition = class {
         start() { w.lastRecognizer = this; }
@@ -168,4 +172,52 @@ test('OpenRouter BYOK uses its streaming endpoint directly without an extra serv
     d.querySelector('#call-hangup').click();
     assert.deepEqual(errors,[]);
   } finally {await new Promise(resolve=>setTimeout(resolve,50));dom.window.close()}
+});
+
+test('first paint is dark even when the OS uses light mode', async () => {
+  const {dom,d,errors}=workspace();
+  try {
+    await new Promise(resolve=>setTimeout(resolve,0));
+    assert.equal(d.documentElement.dataset.theme,'dark');
+    assert.equal(d.documentElement.style.colorScheme,'dark');
+    assert.equal(d.querySelector('meta[name="theme-color"]').content,'#101816');
+    assert.equal(d.querySelector('#theme-picker').value,'dark');
+    assert.deepEqual(errors,[]);
+  } finally {dom.window.close()}
+});
+test('appearance selectors synchronize and save an explicit preference', async () => {
+  const {dom,d,w,errors}=workspace();
+  try {
+    await new Promise(resolve=>setTimeout(resolve,0));
+    const picker=d.querySelector('#theme-picker');picker.value='light';picker.dispatchEvent(new w.Event('change'));
+    assert.equal(d.documentElement.dataset.theme,'light');
+    assert.equal(d.querySelector('#set-theme').value,'light');
+    assert.equal(w.localStorage.getItem('calmora:theme'),'light');
+    w.changeSystemTheme(true);
+    assert.equal(d.documentElement.dataset.theme,'light','OS changes must not override an explicit choice');
+    const setting=d.querySelector('#set-theme');setting.value='dark';setting.dispatchEvent(new w.Event('change'));
+    assert.equal(picker.value,'dark');
+    assert.equal(d.documentElement.dataset.theme,'dark');
+    assert.deepEqual(errors,[]);
+  } finally {dom.window.close()}
+});
+test('system preference tracks OS changes and a saved light choice restores before paint', async () => {
+  const {dom,d,w}=workspace({savedTheme:'system',systemDark:true});
+  try {
+    assert.equal(d.documentElement.dataset.theme,'dark');
+    w.changeSystemTheme(false);
+    assert.equal(d.documentElement.dataset.theme,'light');
+    w.CalmoraTheme.set('invalid');
+    assert.equal(w.CalmoraTheme.get(),'system');
+  } finally {dom.window.close()}
+  const next=workspace({savedTheme:'light',systemDark:true});
+  try{assert.equal(next.d.documentElement.dataset.theme,'light')}finally{next.dom.window.close()}
+});
+test('core Nightfall text color pairs meet WCAG AA normal-text contrast', () => {
+  const luminance=hex=>{
+    const channels=hex.match(/[a-f0-9]{2}/gi).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+    return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722;
+  };
+  const pairs=[['e2ece4','101816'],['afbeb1','202e20'],['afbeb1','293d28'],['b4c99f','19261e'],['172b1a','abc897'],['acbba1','101b14'],['c0cdb5','23301e']];
+  for(const [fg,bg] of pairs){const a=luminance(fg),b=luminance(bg),ratio=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);assert.ok(ratio>=4.5,`${fg} on ${bg}: ${ratio}`)}
 });

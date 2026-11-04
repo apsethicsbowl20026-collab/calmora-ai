@@ -1,15 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<meta name="theme-color" content="#05060f"/>
-<meta name="description" content="Calmora — a voice-first mental wellness companion. Talk, breathe, listen, sleep. Private by design."/>
-<title>Calmora — a quiet place to think out loud</title>
+<meta name="theme-color" content="#101816"/>
+<style>html[data-theme="dark"],html[data-theme="dark"] body{background:#101816;color:#e2ece4}</style>
+<script>
+/* Resolve appearance before styles paint: first visits are intentionally dark. */
+(function(){
+  var key='calmora:theme',choice='dark',media=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+  try{var saved=localStorage.getItem(key);if(['dark','light','system'].indexOf(saved)>=0)choice=saved}catch(e){}
+  function apply(){
+    var resolved=choice==='system'?(media&&media.matches?'dark':'light'):choice;
+    document.documentElement.dataset.theme=resolved;
+    document.documentElement.style.colorScheme=resolved;
+    var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=resolved==='dark'?'#101816':'#f7f8f5';
+    document.querySelectorAll('[data-theme-picker]').forEach(function(el){el.value=choice});
+  }
+  window.CalmoraTheme={get:function(){return choice},set:function(value){if(['dark','light','system'].indexOf(value)<0)return;choice=value;try{localStorage.setItem(key,choice)}catch(e){}apply()}};
+  if(media){if(media.addEventListener)media.addEventListener('change',apply);else if(media.addListener)media.addListener(apply)}
+  window.addEventListener('storage',function(e){if(e.key===key){choice=['dark','light','system'].indexOf(e.newValue)>=0?e.newValue:'dark';apply()}});
+  document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('[data-theme-picker]').forEach(function(el){el.addEventListener('change',function(){window.CalmoraTheme.set(el.value)})});apply()});
+  apply();
+})();
+</script>
+
+<meta name="description" content="PRIMØSHU by Calmora — a voice-first mental wellness companion. Talk, breathe, listen, sleep. Private by design."/>
+<title>PRIMØSHU by Calmora — a quiet place to think out loud</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='%2317504a'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%2393d6c6' opacity='.7'/%3E%3C/svg%3E"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..650;1,9..144,300..650&family=Karla:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet"/>
 <style>
 /* ═══ tokens ═══ */
 :root{
@@ -650,10 +668,11 @@ html.rm .msg,html.rm .typing i{animation:none !important}
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Calmora"/>
+<meta name="apple-mobile-web-app-title" content="PRIMØSHU"/>
 <link rel="apple-touch-icon" href="/icon.svg"/>
 <link rel="icon" type="image/svg+xml" href="/icon.svg"/>
 <link rel="stylesheet" href="/workspace.css"/>
+<link rel="stylesheet" href="/nightfall.css"/>
 </head>
 <body class="state-idle">
 
@@ -701,7 +720,7 @@ html.rm .msg,html.rm .typing i{animation:none !important}
 
 <div id="app">
   <aside id="sidebar" aria-label="Workspace">
-    <a class="brand" href="/" aria-label="Calmora home"><span class="brand-symbol">✳</span> calmora<span class="brand-dot">.</span></a>
+    <a class="brand" href="/" aria-label="PRIMØSHU by Calmora home"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 2v28M2 16h28M6 6l20 20M6 26L26 6M10.6 3l10.8 26M3 10.6l26 10.8M3 21.4l26-10.8M10.6 29L21.4 3"/></svg></span><span class="brand-name">PRIMØSHU<small>by Calmora</small></span></a>
     <div class="workspace-label">YOUR QUIET SPACE</div>
     <div id="sidebar-nav"></div>
     <div class="sidebar-bottom"><div class="private-note"><svg><use href="#i-leaf"/></svg><b>A little space. Just for you.</b><p>Slow down, think out loud,<br/>and find your next small step.</p></div><button id="workspace-settings"><svg><use href="#i-gear"/></svg>Settings & preferences</button><div class="profile"><span>Y</span><div>Your personal space<small>Stored on this device</small></div></div></div>
@@ -709,6 +728,7 @@ html.rm .msg,html.rm .typing i{animation:none !important}
   <header id="topbar">
     <div id="wordmark"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="#17504a"/><circle cx="12" cy="12" r="4" fill="#93d6c6" opacity=".75"/></svg>CALMORA</div>
     <div class="sp"></div>
+    <label class="appearance-picker"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 000 16z" fill="currentColor" stroke="none"/></svg><span class="sr-only">Appearance</span><select id="theme-picker" data-theme-picker aria-label="Appearance"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></label>
     <button class="net-pill" id="net-pill" data-net="local"><span class="dot" aria-hidden="true"></span><span id="net-text">checking…</span></button>
     <button class="icon-btn" id="btn-view" aria-label="Switch to chat view" title="Chat view"><svg aria-hidden="true"><use href="#i-chat"/></svg></button>
     <button class="icon-btn" id="btn-new" aria-label="New conversation" title="New conversation"><svg aria-hidden="true"><use href="#i-plus"/></svg></button>
@@ -716,31 +736,31 @@ html.rm .msg,html.rm .typing i{animation:none !important}
     <button class="icon-btn" id="btn-settings" aria-label="Settings" title="Settings"><svg aria-hidden="true"><use href="#i-gear"/></svg></button>
   </header>
 
-  <div class="workspace-heading"><div><p>MAKE ROOM FOR YOURSELF</p><h2>Let’s find a little clarity.</h2></div><span class="today-date" id="today-date"></span></div>
-  <div class="workspace-grid"><section class="conversation-card" aria-label="Voice companion"><div class="card-top"><span><i></i> YOUR VOICE COMPANION</span><button id="session-transcript">View transcript ↗</button></div>
+  <div class="workspace-heading"><div><p>LESS NOISE. MORE YOU.</p><h2>A softer place to land.</h2></div><div class="quiet-time"><span class="quiet-time-dot"></span><span>A moment, just for you</span><span class="today-date" id="today-date"></span></div></div>
+  <div class="workspace-grid"><section class="conversation-card" aria-label="Voice companion"><div class="card-top"><span><i></i> YOUR VOICE COMPANION</span><button id="session-transcript">View transcript <svg aria-hidden="true"><use href="#i-ext"/></svg></button></div>
   <main id="stage">
     <div id="chat-list" role="log" aria-live="polite" aria-label="Conversation"></div>
-    <p class="companion-eyebrow">A MOMENT WITH CALMORA</p><p id="greeting">good evening</p>
+    <p class="companion-eyebrow">BREATHE IN. YOU’RE HERE.</p><p id="greeting">good evening</p>
     <h1 id="heading">What&rsquo;s on your <em>mind</em>?</h1>
     <div class="orb-zone">
       <div class="orb" id="orb" aria-hidden="true">
-        <div class="orb-glow"></div>
+        <div class="orb-glow"></div><div class="orb-halo" aria-hidden="true"></div>
         <i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i>
         <div class="orb-ripples"><i></i><i></i><i></i></div>
         <div class="orb-float"><div class="orb-core" id="orb-core"></div></div>
         <div class="orb-particles" id="orb-particles"></div>
       </div>
     </div>
-    <p id="state-label" aria-hidden="true">tap to talk · type if you prefer</p>
+    <div class="voice-wave" aria-hidden="true"><i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i><i style="--n:3"></i><i style="--n:4"></i><i style="--n:5"></i><i style="--n:6"></i><i style="--n:7"></i><i style="--n:8"></i><i style="--n:9"></i><i style="--n:10"></i><i style="--n:11"></i><i style="--n:12"></i><i style="--n:13"></i><i style="--n:14"></i><i style="--n:15"></i><i style="--n:16"></i><i style="--n:17"></i><i style="--n:18"></i><i style="--n:19"></i><i style="--n:20"></i></div><p id="state-label" aria-hidden="true">tap to talk · type if you prefer</p>
     <div id="captions"><p id="cap-user"></p><p id="cap-ai" lang="en"></p></div>
     <p class="voice-description">No perfect words needed. I’m here to listen.</p>
     <div id="cta-row">
-      <button id="talk-cta"><svg aria-hidden="true"><use href="#i-mic"/></svg><span id="talk-cta-label">Talk to Calmora</span></button>
+      <button id="talk-cta"><svg aria-hidden="true"><use href="#i-mic"/></svg><span id="talk-cta-label">Talk to PRIMØSHU</span></button>
       <button id="calm-cta"><svg aria-hidden="true"><use href="#i-heart"/></svg>Calm me now</button>
     </div>
     <div class="session-controls"><button id="session-auto" aria-pressed="true"><svg><use href="#i-mic"/></svg>Hands-free <span>On</span></button><button id="session-end" hidden>End session</button><span class="control-divider"></span><button id="session-audio" aria-pressed="true"><svg><use href="#i-waves"/></svg>Voice replies <span>On</span></button></div><p class="engine-label" id="voice-engine">OpenRouter intelligence · Browser voice</p><div id="call-console" hidden aria-label="Call controls"><div class="call-status"><i></i><span id="call-status-text" role="status">Connecting…</span><time id="call-duration">00:00</time></div><div class="call-buttons"><button id="call-mute" aria-pressed="false"><svg><use href="#i-mic"/></svg><span>Mute</span></button><button id="call-interrupt"><svg><use href="#i-pause"/></svg><span>Let me speak</span></button><button id="call-hangup"><svg><use href="#i-phone"/></svg><span>End call</span></button></div><p>Headphones recommended for interruption · Your mic stays on until you mute or end the call.</p></div><p class="keyboard-hint"><kbd>space</kbd> to start a call · speak naturally</p>
     <form id="input-bar" autocomplete="off">
-      <label class="sr-only" for="input-text">Type a message to Calmora</label>
+      <label class="sr-only" for="input-text">Type a message to PRIMØSHU</label>
       <input id="input-text" type="text" placeholder="Prefer to type? Share what’s on your mind…" enterkeyhint="send"/>
       <button type="button" id="btn-mic" aria-label="Start voice input"><svg aria-hidden="true"><use href="#i-mic"/></svg></button>
       <button type="submit" id="btn-send" aria-label="Send message"><svg aria-hidden="true"><use href="#i-send"/></svg></button>
@@ -749,9 +769,9 @@ html.rm .msg,html.rm .typing i{animation:none !important}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5s1.2 1.5 3.5 1.5 3.5-1.5 3.5-1.5"/><circle cx="9" cy="9.8" r=".6" fill="currentColor"/><circle cx="15" cy="9.8" r=".6" fill="currentColor"/></svg>
       How are you arriving today? — quick check-in
     </button>
-  </main><div class="conversation-footer"><span>◈ &nbsp; Your pace. Your space.</span><span>AI companion · Not a substitute for professional care</span></div></section>
-  <aside class="resource-rail" aria-label="Wellness tools"><section class="checkin-card"><span class="section-kicker">A LITTLE CHECK-IN</span><h3>How are you, really?</h3><p>Whatever you’re feeling, there’s<br/>room for it here.</p><div class="mood-options" aria-label="Choose a mood"><button data-mood="Heavy" aria-label="Heavy">☁<small>Heavy</small></button><button data-mood="Low" aria-label="Low">☂<small>Low</small></button><button data-mood="Okay" aria-label="Okay">◒<small>Okay</small></button><button data-mood="Good" aria-label="Good">☀<small>Good</small></button><button data-mood="Light" aria-label="Light">✧<small>Light</small></button></div><p id="mood-feedback" role="status">A small pause to notice yourself.</p></section>
-  <section class="tool-section"><span class="section-kicker">FIND YOUR GROUND</span><h3>A little help, right here.</h3><button class="resource-card breathe-card" data-open="breathe"><span class="resource-icon"><svg><use href="#i-wind"/></svg></span><span><b>Take a breath</b><small>A calmer rhythm, in 2 minutes</small></span><span>↗</span><i class="breath-art"></i></button><button class="resource-card sounds-card" data-open="sounds"><span class="resource-icon"><svg><use href="#i-waves"/></svg></span><span><b>Set the atmosphere</b><small>Sounds to soften your day</small></span><span>↗</span><div class="sound-art" aria-hidden="true">▂ ▅ ▃ ▇ ▄ ▆ ▂ ▅ ▃ ▆ ▄ ▂ ▅ ▃</div></button><button class="journal-link" data-open="journal"><svg><use href="#i-book"/></svg><span><b>Leave a thought here</b><small>Your journal, without judgment</small></span><span>→</span></button></section>
+  </main><div class="conversation-footer"><span><svg aria-hidden="true"><use href="#i-shield"/></svg>Your pace. Your space.</span><span>AI companion · Not a substitute for professional care</span></div></section>
+  <aside class="resource-rail" aria-label="Wellness tools"><section class="checkin-card"><span class="section-kicker">A LITTLE CHECK-IN</span><h3>How are you, really?</h3><p>Whatever you’re feeling, there’s<br/>room for it here.</p><div class="mood-options" aria-label="Choose a mood"><button data-mood="Heavy" aria-label="Heavy"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 9h.01M16 9h.01M8 16q4-5 8 0"/></svg><small>Heavy</small></button><button data-mood="Low" aria-label="Low"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 9h.01M16 9h.01M8 15q4-3 8 0"/></svg><small>Low</small></button><button data-mood="Okay" aria-label="Okay"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 9h.01M16 9h.01M8 15h8"/></svg><small>Okay</small></button><button data-mood="Good" aria-label="Good"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 9h.01M16 9h.01M8 14q4 5 8 0"/></svg><small>Good</small></button><button data-mood="Light" aria-label="Light"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 9h.01M16 9h.01M8 14q4 6 8 0"/></svg><small>Light</small></button></div><p id="mood-feedback" role="status">A small pause to notice yourself.</p></section>
+  <section class="tool-section"><span class="section-kicker">FIND YOUR GROUND</span><h3>A little help, right here.</h3><button class="resource-card breathe-card" data-open="breathe"><span class="resource-icon"><svg><use href="#i-wind"/></svg></span><span><b>Take a breath</b><small>A calmer rhythm, in 2 minutes</small></span><span><svg aria-hidden="true"><use href="#i-ext"/></svg></span><i class="breath-art"></i></button><button class="resource-card sounds-card" data-open="sounds"><span class="resource-icon"><svg><use href="#i-waves"/></svg></span><span><b>Set the atmosphere</b><small>Sounds to soften your day</small></span><span><svg aria-hidden="true"><use href="#i-ext"/></svg></span><div class="sound-art" aria-hidden="true"><i style="height:4px"></i><i style="height:12px"></i><i style="height:8px"></i><i style="height:21px"></i><i style="height:14px"></i><i style="height:27px"></i><i style="height:17px"></i><i style="height:9px"></i><i style="height:15px"></i><i style="height:24px"></i><i style="height:13px"></i><i style="height:6px"></i><i style="height:18px"></i><i style="height:12px"></i><i style="height:28px"></i><i style="height:17px"></i><i style="height:8px"></i><i style="height:12px"></i><i style="height:19px"></i><i style="height:8px"></i><i style="height:14px"></i><i style="height:23px"></i><i style="height:11px"></i><i style="height:5px"></i></div></button><button class="journal-link" data-open="journal"><svg><use href="#i-book"/></svg><span><b>Leave a thought here</b><small>Your journal, without judgment</small></span><span><svg aria-hidden="true"><use href="#i-ext"/></svg></span></button></section>
   <section class="daily-note"><span class="section-kicker">A GENTLE REMINDER</span><p>“You don’t have to see the whole staircase. Just take the first step.”</p><small>ONE SMALL STEP IS ENOUGH</small></section></aside></div>
 
   <nav id="dock" aria-label="Main navigation">
@@ -897,7 +917,7 @@ html.rm .msg,html.rm .typing i{animation:none !important}
     <div class="spark-box"><div id="in-spark"></div></div>
     <p class="sec-label">Gentle numbers</p>
     <div id="in-stats"></div>
-    <div class="privacy-note"><svg aria-hidden="true"><use href="#i-shield"/></svg><span>Everything here lives only in your browser. Check-ins are reflections, not medical data — and Calmora is a companion, not a clinician.</span></div>
+    <div class="privacy-note"><svg aria-hidden="true"><use href="#i-shield"/></svg><span>Everything here lives only in your browser. Check-ins are reflections, not medical data — and PRIMØSHU is a companion, not a clinician.</span></div>
     <div class="br-controls" style="margin-top:16px">
       <button class="btn btn-ghost" id="btn-export-all"><svg aria-hidden="true"><use href="#i-download"/></svg>Export my data</button>
       <button class="btn danger btn-ghost" id="btn-erase">Erase everything</button>
@@ -939,15 +959,17 @@ html.rm .msg,html.rm .typing i{animation:none !important}
   <div class="backdrop" data-close></div>
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="set-title">
     <div class="sheet-head"><div><h2 id="set-title">Settings</h2><p class="sub">Model, voice, safety, accessibility. Stored locally.</p></div><button class="icon-btn" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <p class="sec-label">Appearance</p>
+    <div class="set-group"><div class="set-row"><span class="lab"><b>Your kind of quiet</b><small>Dark by default. Choose light or follow your device.</small></span><select id="set-theme" data-theme-picker aria-label="Color theme"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></div></div>
     <p class="sec-label">AI</p>
     <div class="set-group">
-      <div class="set-row"><span class="lab"><b>Your OpenRouter API key</b><small>Optional. With a key, Calmora talks to OpenRouter directly — no server needed. Stored only on this device.</small></span>
+      <div class="set-row"><span class="lab"><b>Your OpenRouter API key</b><small>Optional. With a key, PRIMØSHU talks to OpenRouter directly — no server needed. Stored only on this device.</small></span>
         <span class="key-field"><input type="password" id="set-key" spellcheck="false" autocomplete="off" placeholder="sk-or-v1-…" aria-label="OpenRouter API key"/>
         <button type="button" class="key-eye" id="set-key-eye" aria-label="Toggle key visibility" aria-pressed="false"><svg aria-hidden="true"><use href="#i-eye"/></svg></button></span>
       </div>
       <div class="set-row"><span class="lab"><b>API endpoint</b><small>Your /api/chat server (Cloudflare Pages Function). It holds the system prompt, the key, and rate limits.</small></span><input type="text" id="set-endpoint" spellcheck="false" aria-label="API endpoint"/></div>
       <div class="set-row"><span class="lab"><b>Model</b><small>OpenRouter model id. <b>openrouter/free</b> auto-picks the best free one. Try <b>meta-llama/llama-3.3-70b-instruct:free</b> or <b>qwen/qwen3-next-80b-a3b-instruct:free</b>.</small></span><input type="text" id="set-model" spellcheck="false" aria-label="Model"/></div>
-      <div class="set-row"><span class="lab"><b>Auto-continue listening</b><small>Mic reopens after Calmora finishes speaking.</small></span><span class="switch"><input type="checkbox" id="set-auto"/><span class="tr"></span></span></div>
+      <div class="set-row"><span class="lab"><b>Auto-continue listening</b><small>Mic reopens after PRIMØSHU finishes speaking.</small></span><span class="switch"><input type="checkbox" id="set-auto"/><span class="tr"></span></span></div>
     </div>
     <p class="key-status" id="key-status"></p>
     <p class="hint-line">Replies come from your <b>/api/chat</b> server, which adds the prompt and key. <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" style="color:var(--foam)">Get a free OpenRouter key →</a> and paste it above to use your own quota (optional). No server or key? The offline companion still talks.</p>
@@ -973,7 +995,7 @@ html.rm .msg,html.rm .typing i{animation:none !important}
     <div class="set-group">
       <div class="set-row"><span class="lab"><b>Reduce motion</b><small>Stills the orb; state shown by colour and text.</small></span><span class="switch"><input type="checkbox" id="set-rm"/><span class="tr"></span></span></div>
     </div>
-    <p class="hint-line">Calmora is a wellbeing companion. It does not diagnose, treat, or replace professional care. If you are in danger, contact local emergency services now.</p>
+    <p class="hint-line">PRIMØSHU is a wellbeing companion. It does not diagnose, treat, or replace professional care. If you are in danger, contact local emergency services now.</p>
   </div>
 </div>
 
@@ -1026,7 +1048,7 @@ html.rm .msg,html.rm .typing i{animation:none !important}
 
 <div id="toast-region" aria-live="polite"></div>
 <div class="sr-only" aria-live="polite" id="aria-live"></div>
-<noscript><p style="padding:24px;font-family:sans-serif">Calmora needs JavaScript. Please enable it.</p></noscript>
+<noscript><p style="padding:24px;font-family:sans-serif">PRIMØSHU needs JavaScript. Please enable it.</p></noscript>
 
 <script>
 (function(){
@@ -1067,12 +1089,12 @@ function langStt(c){return langMeta(c).stt}
 function langDir(c){return langMeta(c).dir}
 function langName(c){return langMeta(c).name}
 var STRINGS={
-en:{'greeting.night':'a quiet hour','greeting.morning':'good morning','greeting.afternoon':'good afternoon','greeting.evening':'good evening','heading.idle':'What&rsquo;s on your <em>mind</em>?','heading.listening':'Go ahead &mdash; I&rsquo;m <em>listening</em>.','heading.thinking':'Let me sit with that <em>for a moment</em>&hellip;','label.idle':'tap to talk \u00b7 type if you prefer','label.listening':'listening\u2026','label.thinking':'thinking\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Call Calmora','cta.talk_listening':'Listening \u2014 tap to stop','cta.talk_thinking':'Interrupt & talk','cta.talk_speaking':'Interrupt & talk','cta.calm':'Calm me now','input.placeholder':'Prefer to type? Share what’s on your mind…','dock.talk':'Talk','dock.calm':'Calm','dock.sounds':'Sounds','dock.journal':'Journal','dock.you':'You','chip.breathe':'Breathe','chip.sounds':'Soundscapes','chip.ground':'Grounding','chip.calm':'Calm hub','chip.journal':'Journal','chat.empty_sub':'I&rsquo;m Calmora. Talk or type &mdash; whatever&rsquo;s on your mind lands right here.','settings.language':'Language','suggestions':[['I can\u2019t sleep','I can\u2019t sleep, my mind just won\u2019t switch off.'],['I feel anxious','I feel anxious and I\u2019m not sure why.'],['Too much today','Everything feels like too much today.'],['Something good','Something good happened today.']]},
+en:{'greeting.night':'a quiet hour','greeting.morning':'good morning','greeting.afternoon':'good afternoon','greeting.evening':'good evening','heading.idle':'What&rsquo;s on your <em>mind</em>?','heading.listening':'Go ahead &mdash; I&rsquo;m <em>listening</em>.','heading.thinking':'Let me sit with that <em>for a moment</em>&hellip;','label.idle':'tap to talk \u00b7 type if you prefer','label.listening':'listening\u2026','label.thinking':'thinking\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Call PRIMØSHU','cta.talk_listening':'Listening \u2014 tap to stop','cta.talk_thinking':'Interrupt & talk','cta.talk_speaking':'Interrupt & talk','cta.calm':'Calm me now','input.placeholder':'Prefer to type? Share what’s on your mind…','dock.talk':'Talk','dock.calm':'Calm','dock.sounds':'Sounds','dock.journal':'Journal','dock.you':'You','chip.breathe':'Breathe','chip.sounds':'Soundscapes','chip.ground':'Grounding','chip.calm':'Calm hub','chip.journal':'Journal','chat.empty_sub':'I&rsquo;m PRIMØSHU. Talk or type &mdash; whatever&rsquo;s on your mind lands right here.','settings.language':'Language','suggestions':[['I can\u2019t sleep','I can\u2019t sleep, my mind just won\u2019t switch off.'],['I feel anxious','I feel anxious and I\u2019m not sure why.'],['Too much today','Everything feels like too much today.'],['Something good','Something good happened today.']]},
 hi:{'greeting.night':'एक शांत पल','greeting.morning':'सुप्रभात','greeting.afternoon':'शुभ अपराह्न','greeting.evening':'शुभ संध्या','heading.idle':'आपके <em>मन</em> में क्या है?','heading.listening':'बोलिए &mdash; मैं <em>सुन</em> रहा हूँ।','heading.thinking':'एक <em>पल</em> सोचने दें&hellip;','label.idle':'बात करने के लिए टैप करें \u00b7 या टाइप करें','label.listening':'सुन रहा हूँ\u2026','label.thinking':'सोच रहा हूँ\u2026','label.speaking':'काल्मोरा','cta.talk':'काल्मोरा से बात करें','cta.talk_listening':'सुन रहा हूँ \u2014 रोकने के लिए टैप करें','cta.talk_thinking':'सोच रहा हूँ\u2026','cta.talk_speaking':'बोल रहा हूँ\u2026','cta.calm':'मुझे शांत करें','input.placeholder':'या यहाँ टाइप करें\u2026','dock.talk':'बात','dock.calm':'शांति','dock.sounds':'ध्वनि','dock.journal':'डायरी','dock.you':'आप','chip.breathe':'साँस','chip.sounds':'ध्वनियाँ','chip.ground':'ग्राउंडिंग','chip.calm':'शांति','chip.journal':'डायरी','chat.empty_sub':'मैं काल्मोरा हूँ। बोलें या टाइप करें &mdash; जो भी मन में है, यहीं आएगा।','settings.language':'भाषा','suggestions':[['मुझे नींद नहीं आ रही','मुझे नींद नहीं आ रही, दिमाग बंद नहीं हो रहा।'],['मुझे घबराहट है','मुझे घबराहट हो रही है और पता नहीं क्यों।'],['आज बहुत हो गया','आज सब बहुत ज़्यादा लग रहा है।'],['कुछ अच्छा','आज कुछ अच्छा हुआ।']]},
-es:{'greeting.night':'una hora tranquila','greeting.morning':'buenos días','greeting.afternoon':'buenas tardes','greeting.evening':'buenas noches','heading.idle':'¿Qué tienes en <em>mente</em>?','heading.listening':'Adelante &mdash; te <em>escucho</em>.','heading.thinking':'Déjame pensarlo un <em>momento</em>&hellip;','label.idle':'toca para hablar \u00b7 o escribe','label.listening':'escuchando\u2026','label.thinking':'pensando\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Habla con Calmora','cta.talk_listening':'Escuchando \u2014 toca para parar','cta.talk_thinking':'Pensando\u2026','cta.talk_speaking':'Hablando\u2026','cta.calm':'Cálmame ahora','input.placeholder':'o escribe aquí\u2026','dock.talk':'Hablar','dock.calm':'Calma','dock.sounds':'Sonidos','dock.journal':'Diario','dock.you':'Tú','chip.breathe':'Respirar','chip.sounds':'Paisajes','chip.ground':'Anclaje','chip.calm':'Calma','chip.journal':'Diario','chat.empty_sub':'Soy Calmora. Habla o escribe &mdash; lo que tengas en mente llega aquí.','settings.language':'Idioma','suggestions':[['No puedo dormir','No puedo dormir, mi mente no se apaga.'],['Me siento ansioso','Me siento con ansiedad y no sé por qué.'],['Hoy es demasiado','Hoy todo parece demasiado.'],['Algo bueno','Algo bueno pasó hoy.']]},
-fr:{'greeting.night':'une heure tranquille','greeting.morning':'bonjour','greeting.afternoon':'bon après-midi','greeting.evening':'bonsoir','heading.idle':'Qu&rsquo;as-tu en <em>tête</em> ?','heading.listening':'Vas-y &mdash; je t&rsquo;<em>écoute</em>.','heading.thinking':'Laisse-moi y réfléchir un <em>instant</em>&hellip;','label.idle':'touche pour parler \u00b7 ou écris','label.listening':'écoute\u2026','label.thinking':'réflexion\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Parler à Calmora','cta.talk_listening':'À l&rsquo;écoute \u2014 touche pour arrêter','cta.talk_thinking':'Réflexion\u2026','cta.talk_speaking':'Parole\u2026','cta.calm':'Apaise-moi','input.placeholder':'ou écris ici\u2026','dock.talk':'Parler','dock.calm':'Apaiser','dock.sounds':'Sons','dock.journal':'Journal','dock.you':'Vous','chip.breathe':'Respirer','chip.sounds':'Ambiances','chip.ground':'Ancrage','chip.calm':'Espace','chip.journal':'Journal','chat.empty_sub':'Je suis Calmora. Parle ou écris &mdash; ce que tu as en tête arrive ici.','settings.language':'Langue','suggestions':[['Je n\u2019arrive pas à dormir','Je n\u2019arrive pas à dormir, mon esprit ne s\u2019arrête pas.'],['Je me sens anxieux','Je me sens anxieux sans savoir pourquoi.'],['Trop de choses','Tout me semble trop aujourd\u2019hui.'],['Du positif','Quelque chose de bien s\u2019est passé aujourd\u2019hui.']]},
-de:{'greeting.night':'eine stille Stunde','greeting.morning':'guten Morgen','greeting.afternoon':'guten Tag','greeting.evening':'guten Abend','heading.idle':'Was beschäftigt <em>dich</em>?','heading.listening':'Nur zu &mdash; ich <em>höre</em> zu.','heading.thinking':'Lass mich kurz <em>nachdenken</em>&hellip;','label.idle':'tippen zum Sprechen \u00b7 oder schreiben','label.listening':'zu hören\u2026','label.thinking':'nachdenken\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Sprich mit Calmora','cta.talk_listening':'Ich höre zu \u2014 tippen zum Stoppen','cta.talk_thinking':'Nachdenken\u2026','cta.talk_speaking':'Sprechen\u2026','cta.calm':'Beruhige mich','input.placeholder':'oder schreib hier\u2026','dock.talk':'Sprechen','dock.calm':'Ruhe','dock.sounds':'Klänge','dock.journal':'Tagebuch','dock.you':'Du','chip.breathe':'Atmen','chip.sounds':'Klänge','chip.ground':'Erdung','chip.calm':'Ruhe','chip.journal':'Tagebuch','chat.empty_sub':'Ich bin Calmora. Sprich oder schreib &mdash; was dich beschäftigt, landet hier.','settings.language':'Sprache','suggestions':[['Ich kann nicht schlafen','Ich kann nicht schlafen, meine Gedanken hören nicht auf.'],['Ich fühle mich unruhig','Ich fühle mich unruhig und weiß nicht warum.'],['Zu viel heute','Heute ist alles zu viel.'],['Etwas Gutes','Heute ist etwas Gutes passiert.']]},
-pt:{'greeting.night':'uma hora tranquila','greeting.morning':'bom dia','greeting.afternoon':'boa tarde','greeting.evening':'boa noite','heading.idle':'O que você tem em <em>mente</em>?','heading.listening':'Pode falar &mdash; estou <em>ouvindo</em>.','heading.thinking':'Deixe-me pensar um <em>instante</em>&hellip;','label.idle':'toque para falar \u00b7 ou escreva','label.listening':'ouvindo\u2026','label.thinking':'pensando\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Fale com Calmora','cta.talk_listening':'Ouvindo \u2014 toque para parar','cta.talk_thinking':'Pensando\u2026','cta.talk_speaking':'Falando\u2026','cta.calm':'Me acalme agora','input.placeholder':'ou escreva aqui\u2026','dock.talk':'Falar','dock.calm':'Calma','dock.sounds':'Sons','dock.journal':'Diário','dock.you':'Você','chip.breathe':'Respirar','chip.sounds':'Paisagens','chip.ground':'Aterramento','chip.calm':'Calma','chip.journal':'Diário','chat.empty_sub':'Sou a Calmora. Fale ou escreva &mdash; o que estiver em mente chega aqui.','settings.language':'Idioma','suggestions':[['Não consigo dormir','Não consigo dormir, minha mente não desliga.'],['Sinto ansiedade','Sinto ansiedade e não sei por quê.'],['Hoje é demais','Hoje tudo parece demais.'],['Algo bom','Algo bom aconteceu hoje.']]},
+es:{'greeting.night':'una hora tranquila','greeting.morning':'buenos días','greeting.afternoon':'buenas tardes','greeting.evening':'buenas noches','heading.idle':'¿Qué tienes en <em>mente</em>?','heading.listening':'Adelante &mdash; te <em>escucho</em>.','heading.thinking':'Déjame pensarlo un <em>momento</em>&hellip;','label.idle':'toca para hablar \u00b7 o escribe','label.listening':'escuchando\u2026','label.thinking':'pensando\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Habla con PRIMØSHU','cta.talk_listening':'Escuchando \u2014 toca para parar','cta.talk_thinking':'Pensando\u2026','cta.talk_speaking':'Hablando\u2026','cta.calm':'Cálmame ahora','input.placeholder':'o escribe aquí\u2026','dock.talk':'Hablar','dock.calm':'Calma','dock.sounds':'Sonidos','dock.journal':'Diario','dock.you':'Tú','chip.breathe':'Respirar','chip.sounds':'Paisajes','chip.ground':'Anclaje','chip.calm':'Calma','chip.journal':'Diario','chat.empty_sub':'Soy PRIMØSHU. Habla o escribe &mdash; lo que tengas en mente llega aquí.','settings.language':'Idioma','suggestions':[['No puedo dormir','No puedo dormir, mi mente no se apaga.'],['Me siento ansioso','Me siento con ansiedad y no sé por qué.'],['Hoy es demasiado','Hoy todo parece demasiado.'],['Algo bueno','Algo bueno pasó hoy.']]},
+fr:{'greeting.night':'une heure tranquille','greeting.morning':'bonjour','greeting.afternoon':'bon après-midi','greeting.evening':'bonsoir','heading.idle':'Qu&rsquo;as-tu en <em>tête</em> ?','heading.listening':'Vas-y &mdash; je t&rsquo;<em>écoute</em>.','heading.thinking':'Laisse-moi y réfléchir un <em>instant</em>&hellip;','label.idle':'touche pour parler \u00b7 ou écris','label.listening':'écoute\u2026','label.thinking':'réflexion\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Parler à PRIMØSHU','cta.talk_listening':'À l&rsquo;écoute \u2014 touche pour arrêter','cta.talk_thinking':'Réflexion\u2026','cta.talk_speaking':'Parole\u2026','cta.calm':'Apaise-moi','input.placeholder':'ou écris ici\u2026','dock.talk':'Parler','dock.calm':'Apaiser','dock.sounds':'Sons','dock.journal':'Journal','dock.you':'Vous','chip.breathe':'Respirer','chip.sounds':'Ambiances','chip.ground':'Ancrage','chip.calm':'Espace','chip.journal':'Journal','chat.empty_sub':'Je suis PRIMØSHU. Parle ou écris &mdash; ce que tu as en tête arrive ici.','settings.language':'Langue','suggestions':[['Je n\u2019arrive pas à dormir','Je n\u2019arrive pas à dormir, mon esprit ne s\u2019arrête pas.'],['Je me sens anxieux','Je me sens anxieux sans savoir pourquoi.'],['Trop de choses','Tout me semble trop aujourd\u2019hui.'],['Du positif','Quelque chose de bien s\u2019est passé aujourd\u2019hui.']]},
+de:{'greeting.night':'eine stille Stunde','greeting.morning':'guten Morgen','greeting.afternoon':'guten Tag','greeting.evening':'guten Abend','heading.idle':'Was beschäftigt <em>dich</em>?','heading.listening':'Nur zu &mdash; ich <em>höre</em> zu.','heading.thinking':'Lass mich kurz <em>nachdenken</em>&hellip;','label.idle':'tippen zum Sprechen \u00b7 oder schreiben','label.listening':'zu hören\u2026','label.thinking':'nachdenken\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Sprich mit PRIMØSHU','cta.talk_listening':'Ich höre zu \u2014 tippen zum Stoppen','cta.talk_thinking':'Nachdenken\u2026','cta.talk_speaking':'Sprechen\u2026','cta.calm':'Beruhige mich','input.placeholder':'oder schreib hier\u2026','dock.talk':'Sprechen','dock.calm':'Ruhe','dock.sounds':'Klänge','dock.journal':'Tagebuch','dock.you':'Du','chip.breathe':'Atmen','chip.sounds':'Klänge','chip.ground':'Erdung','chip.calm':'Ruhe','chip.journal':'Tagebuch','chat.empty_sub':'Ich bin PRIMØSHU. Sprich oder schreib &mdash; was dich beschäftigt, landet hier.','settings.language':'Sprache','suggestions':[['Ich kann nicht schlafen','Ich kann nicht schlafen, meine Gedanken hören nicht auf.'],['Ich fühle mich unruhig','Ich fühle mich unruhig und weiß nicht warum.'],['Zu viel heute','Heute ist alles zu viel.'],['Etwas Gutes','Heute ist etwas Gutes passiert.']]},
+pt:{'greeting.night':'uma hora tranquila','greeting.morning':'bom dia','greeting.afternoon':'boa tarde','greeting.evening':'boa noite','heading.idle':'O que você tem em <em>mente</em>?','heading.listening':'Pode falar &mdash; estou <em>ouvindo</em>.','heading.thinking':'Deixe-me pensar um <em>instante</em>&hellip;','label.idle':'toque para falar \u00b7 ou escreva','label.listening':'ouvindo\u2026','label.thinking':'pensando\u2026','label.speaking':'speaking · tap to interrupt','cta.talk':'Fale com PRIMØSHU','cta.talk_listening':'Ouvindo \u2014 toque para parar','cta.talk_thinking':'Pensando\u2026','cta.talk_speaking':'Falando\u2026','cta.calm':'Me acalme agora','input.placeholder':'ou escreva aqui\u2026','dock.talk':'Falar','dock.calm':'Calma','dock.sounds':'Sons','dock.journal':'Diário','dock.you':'Você','chip.breathe':'Respirar','chip.sounds':'Paisagens','chip.ground':'Aterramento','chip.calm':'Calma','chip.journal':'Diário','chat.empty_sub':'Sou a PRIMØSHU. Fale ou escreva &mdash; o que estiver em mente chega aqui.','settings.language':'Idioma','suggestions':[['Não consigo dormir','Não consigo dormir, minha mente não desliga.'],['Sinto ansiedade','Sinto ansiedade e não sei por quê.'],['Hoje é demais','Hoje tudo parece demais.'],['Algo bom','Algo bom aconteceu hoje.']]},
 ar:{'greeting.night':'ساعة هادئة','greeting.morning':'صباح الخير','greeting.afternoon':'نهارك سعيد','greeting.evening':'مساء الخير','heading.idle':'ما الذي يشغل <em>بالكم</em>؟','heading.listening':'تفضلوا &mdash; أنا <em>أستمع</em>.','heading.thinking':'دعوني أفكر <em>لحظة</em>&hellip;','label.idle':'انقر للتحدث \u00b7 أو اكتب','label.listening':'أستمع\u2026','label.thinking':'أفكر\u2026','label.speaking':'كالمورا','cta.talk':'تحدّث إلى كالمورا','cta.talk_listening':'أستمع \u2014 انقر للإيقاف','cta.talk_thinking':'أفكر\u2026','cta.talk_speaking':'أتحدث\u2026','cta.calm':'هدّئني الآن','input.placeholder':'أو اكتب هنا\u2026','dock.talk':'حديث','dock.calm':'هدوء','dock.sounds':'أصوات','dock.journal':'يوميات','dock.you':'أنت','chip.breathe':'تنفس','chip.sounds':'أجواء','chip.ground':'تأريض','chip.calm':'هدوء','chip.journal':'يوميات','chat.empty_sub':'أنا كالمورا. تحدّث أو اكتب &mdash; ما يشغل بالكم يصل إلى هنا.','settings.language':'اللغة','suggestions':[['لا أستطيع النوم','لا أستطيع النوم، عقلي لا يهدأ.'],['أشعر بالقلق','أشعر بالقلق ولا أعرف السبب.'],['أكثر مما أحتمل','كل شيء يبدو أكثر مما أحتمل اليوم.'],['شيء جميل','حدث شيء جميل اليوم.']]}
 };
 function t(k){var L=S.lang||'en';return (STRINGS[L]&&STRINGS[L][k])||STRINGS.en[k]||k}
@@ -1507,7 +1529,7 @@ function renderCall(){
   $('#call-console').hidden=!CALL.active;
   document.body.classList.toggle('in-call',CALL.active);
   if(!CALL.active)return;
-  var status=CALL.muted?'Microphone muted':(V.voice==='speaking'?'Calmora is speaking · you can interrupt':V.busy?'Thinking · I’m still listening':'Listening · take your time');
+  var status=CALL.muted?'Microphone muted':(V.voice==='speaking'?'PRIMØSHU is speaking · you can interrupt':V.busy?'Thinking · I’m still listening':'Listening · take your time');
   $('#call-status-text').textContent=status;
   $('#call-mute').setAttribute('aria-pressed',String(CALL.muted));
   $('#call-mute span').textContent=CALL.muted?'Unmute':'Mute';
@@ -1688,9 +1710,9 @@ var CLIENT_TOOLS = [
   { type: 'function', function: { name: 'sleep_mode', description: 'Start sleep mode with a gently fading soundscape and timer.', parameters: { type: 'object', properties: { sound: { type: 'string', enum: ['rain','ocean','forest','brown','fire','night','cave'] }, minutes: { type: 'number', description: 'Timer length in minutes.' } }, required: ['sound'] } } },
 ];
 
-var SYSTEM_PROMPT=`You are Calmora, a warm, practical wellbeing companion in a voice-first app.
+var SYSTEM_PROMPT=`You are PRIMØSHU, a warm, practical wellbeing companion in a voice-first app.
 
-CRITICAL OUTPUT RULE: Output ONLY the spoken reply. No thinking, no reasoning, no planning, no preamble, no meta-commentary, no labels. Never write "Okay," "Let me think," "I understand," or any lead-in before the reply. Never use <think>, <reasoning>, <thinking>, or any similar tag. The first character you output must be the first word Calmora actually says out loud.
+CRITICAL OUTPUT RULE: Output ONLY the spoken reply. No thinking, no reasoning, no planning, no preamble, no meta-commentary, no labels. Never write "Okay," "Let me think," "I understand," or any lead-in before the reply. Never use <think>, <reasoning>, <thinking>, or any similar tag. The first character you output must be the first word PRIMØSHU actually says out loud.
 
 HOW YOU TALK
 - This can be a live phone-like call. Follow the user's lead; don't force an exercise or advice into every turn. Short answers can be one sentence. Ask a follow-up only when it helps.
@@ -1788,7 +1810,7 @@ function streamOpenRouter(msgs,safetyFlag,handlers){
   var prompt=SYSTEM_PROMPT+(safetyFlag==='crisis'?'\n'+CRISIS_ADDENDUM:'')+'\nReply in '+langName(S.lang)+'.';
   fetch('https://openrouter.ai/api/v1/chat/completions',{
     method:'POST',signal:ctrl.signal,
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.apiKey,'X-Title':'Calmora'},
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.apiKey,'X-Title':'PRIMOSHU by Calmora'},
     body:JSON.stringify({model:S.model||'openrouter/free',stream:true,messages:[{role:'system',content:prompt}].concat(msgs),tools:CLIENT_TOOLS,tool_choice:'auto',temperature:.7,max_tokens:300,reasoning:{exclude:true}})
   }).then(function(res){
     if(!res.ok||!res.body)throw new Error(res.status===401||res.status===403?'bad_key':res.status===429?'rate_limited':'http_'+res.status);
@@ -2044,7 +2066,7 @@ function renderTranscript(){
   var l=$('#tx-list');l.innerHTML='';
   if(!history.length){l.innerHTML='<p class="j-empty">Nothing yet.<br>Say hello — it stays on this device only.</p>';return}
   history.forEach(function(m){
-    var d=el('div','tx-msg '+m.role);d.innerHTML='<p class="who">'+(m.role==='user'?'You':'Calmora')+' · '+relTime(m.ts)+(m.meta==='local'?' <span class="loc">· offline companion</span>':'')+'</p><p>'+esc(m.text)+'</p>';
+    var d=el('div','tx-msg '+m.role);d.innerHTML='<p class="who">'+(m.role==='user'?'You':'PRIMØSHU')+' · '+relTime(m.ts)+(m.meta==='local'?' <span class="loc">· offline companion</span>':'')+'</p><p>'+esc(m.text)+'</p>';
     l.appendChild(d);
   });l.scrollTop=l.scrollHeight;
 }
@@ -2057,7 +2079,7 @@ function newConversation(){
   turnToken++;V.busy=false;if(V.voice==='listening')cancelListening();stopSpeaking();
   if(turnCancel){try{turnCancel()}catch(e){}}turnCancel=null;
   history=[];persist();setVoice('idle');caption('user','');caption('ai','');renderTranscript();chatClearStream();renderChat();
-  toast('Fresh start. Calmora\u2019s here whenever you are.');
+  toast('Fresh start. PRIMØSHU\u2019s here whenever you are.');
 }
 $('#btn-new').addEventListener('click',newConversation);
 

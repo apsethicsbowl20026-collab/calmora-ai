@@ -27,7 +27,7 @@
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-const SYSTEM_PROMPT = `You are Calmora, a warm, practical wellbeing companion in a voice-first app. You are heard, not read — so speak naturally.
+const SYSTEM_PROMPT = `You are PRIMØSHU, by Calmora, a warm, practical wellbeing companion in a voice-first app. You are heard, not read — so speak naturally.
 
 HOW YOU TALK
 - This can be a live phone-like call. Follow the user's lead; don't force an exercise or advice into every turn. Short answers can be one sentence. Ask a follow-up only when it helps.
@@ -222,7 +222,7 @@ export async function onRequest(context) {
         Authorization: 'Bearer ' + key,
         'Content-Type': 'application/json',
         'HTTP-Referer': env.APP_URL || 'https://calmora.pages.dev',
-        'X-Title': 'Calmora',
+        'X-Title': 'PRIMOSHU by Calmora',
       },
       body: JSON.stringify({
         model,
