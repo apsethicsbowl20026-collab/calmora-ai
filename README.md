@@ -497,3 +497,59 @@ Released under the **MIT License**. See [`LICENSE`](LICENSE). Build something ki
 - Breathing protocols informed by research on coherent breathing, the physiological sigh (Huberman/Stanford), and 4-7-8 (Weil). Grounding, PMR, and values work draw on DBT, ACT, and classic relaxation traditions.
 
 <sub>If Calmora helps you, consider supporting a mental-health charity in your country.</sub>
+
+## Voice workspace revamp
+
+The workspace now uses a light sage visual system with a desktop navigation rail,
+focused voice stage, mood check-in, wellness cards and responsive mobile navigation.
+Voice calls expose persistent listening, mute/unmute, an explicit hang-up button,
+browser voice identification, live captions, and interruption controls.
+“Speaking” is driven by audio playback rather than arriving text tokens. Switching
+away from the page or opening a tool cancels active microphone input.
+
+### OpenRouter-only voice calls
+
+**No additional speech API keys or providers are configured.** OpenRouter is the
+only keyed AI integration. The browser supplies speech recognition and system
+speech synthesis. Start a call once and the microphone stays available across
+turns; silence does not hang up. Calmora sends a transcript after a short pause,
+streams a concise OpenRouter response into spoken sentences, and returns to
+listening automatically. Calls have a live duration, mute/unmute, interrupt and
+hang-up controls. The input microphone still supports one-shot dictation.
+
+Recognition stays active during speech playback. A transcript echo filter ignores
+words matching the assistant's response; distinct phrases of at least three words
+can interrupt playback/generation. The explicit **Let me speak** button is the
+reliable fallback for short interruptions or loudspeaker echo. Use headphones for
+the best experience. This is best-effort browser barge-in, not full-duplex WebRTC
+or an end-to-end audio model. Browser recognition may use a browser-vendor speech
+service; it is not guaranteed local/offline. Browser voices and timing vary by OS.
+
+Chrome/Edge over HTTPS are recommended. Microphone permission and speech service
+failures end the call with an actionable message. Recognition reconnects after
+normal service disconnects. Muting releases the recognizer; hang-up invalidates
+late callbacks and cancels speech, generation, timers and microphone resources.
+Opening a tool temporarily mutes the call and closing it restores listening.
+Backgrounding the app ends the call for privacy. No raw audio is saved by Calmora.
+
+### Development and validation
+
+The app needs no frontend build step. Run `npm install`, `npm test`, and
+`npm run dev`. The static preview runs on port 3000 and supports local wellness
+tools; `/api/chat` needs Cloudflare Pages (or use a browser OpenRouter key for
+direct chat). Tests use simulated recognition and speech; actual microphone,
+acoustic echo, provider latency and mobile-browser playback require device QA.
+
+### Production deployment requirements
+
+The visual/interaction revamp is not a claim of enterprise certification. Protect
+public paid endpoints with authentication and edge rate-limit rules. Configure a
+stable low-latency OpenRouter model rather than relying on a free-model router for
+latency-sensitive calls. Complete accessibility and real-device voice QA, provider
+privacy/retention review, monitoring, abuse controls and load testing before
+enterprise deployment. Browser BYOK storage remains device-local; prefer
+server-managed OpenRouter secrets on shared or managed devices.
+
+Design rationale: explicit turn feedback, short spoken replies, interruption and
+text alternatives follow the voice interaction principles discussed in
+[Voice User Interface Design: A Practical Guide](https://refact.co/insights/digital-product/voice-user-interface-design).

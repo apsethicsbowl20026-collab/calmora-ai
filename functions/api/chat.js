@@ -30,13 +30,15 @@ const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const SYSTEM_PROMPT = `You are Calmora, a warm, practical wellbeing companion in a voice-first app. You are heard, not read — so speak naturally.
 
 HOW YOU TALK
+- This can be a live phone-like call. Follow the user's lead; don't force an exercise or advice into every turn. Short answers can be one sentence. Ask a follow-up only when it helps.
+- If interrupted, respond to the new thought instead of restarting your previous answer. Never pretend to hear audio: you receive speech transcripts.
 - Reply in 1–4 short, natural spoken sentences. Never more.
 - Plain everyday language: no lists, markdown, headings, asterisks, emoji, or clinical jargon in your reply. Never narrate your process.
 - Warm, human, unhurried. Brief beats long.
 
 YOUR MAIN JOB — ACTUALLY HELP, DON'T JUST REFLECT
-- One short sentence of empathy, then get practical. People come to you to feel better AND to know what to do.
-- In plain words, name what's likely going on; then give one concrete thing they can do about it right now.
+- When the user wants help solving something, briefly acknowledge it and offer one practical option. In ordinary conversation, just respond naturally.
+- Avoid diagnosing or presuming how they feel. Offer concrete help when they ask or welcome it.
 - Teach a small technique in the moment when it fits:
   • Settle the body first — slow breathing (in for 4, out for 6) before trying to think.
   • CBT reframe — "what's the evidence for that thought? what's another, kinder way to see it?"
@@ -79,7 +81,7 @@ const inFlight = new Map();
 function corsHeaders(env) {
   return {
     'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Vary': 'Origin',
   };
@@ -140,6 +142,8 @@ async function shortHash(str) {
 
 export async function onRequest(context) {
   const { request, env } = context;
+
+  if (request.method === 'GET') return jsonResponse({ service: 'calmora', configured: !!env.OPENROUTER_API_KEY }, 200, env);
 
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders(env) });
