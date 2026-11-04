@@ -23,6 +23,18 @@ A private, installable, voice-driven mental-wellness app. Talk to a glowing orb 
 
 ---
 
+## 📓 Project logbook
+
+A completed **AI Project Logbook** for Calmora (following the IBM EdTech Youth
+Challenge template) lives in [`logbook/`](logbook/README.md): an editable
+[Word document](CALMORA-AI-Project-Logbook.docx), a
+[submission-ready PDF](CALMORA-AI-Project-Logbook.pdf), and the
+[Markdown source](logbook/CALMORA-AI-Project-Logbook.md). Team names, school
+details, interview notes and test numbers are highlighted in yellow — fill those
+in before submitting. Run `python3 logbook/build.py` after editing the source.
+
+---
+
 ## ✨ Why Calmora
 
 Most "AI wellness" apps are thin chat wrappers. Calmora is a **complete, calm, tactile environment** built around four ideas:
@@ -216,7 +228,13 @@ flowchart LR
 ├── sw.js                 # service worker (offline PWA shell)
 ├── manifest.webmanifest  # PWA manifest
 ├── icon.svg              # app icon (maskable)
-└── README.md             # you are here
+├── README.md             # you are here
+├── CALMORA-AI-Project-Logbook.docx   # completed AI Project Logbook (editable)
+├── CALMORA-AI-Project-Logbook.pdf    # completed AI Project Logbook (to submit)
+└── logbook/
+    ├── CALMORA-AI-Project-Logbook.md # logbook source of truth
+    ├── build.py                      # regenerates .docx + .pdf from the .md
+    └── README.md                     # how to edit and submit the logbook
 ```
 
 **Deploy layout (Cloudflare Pages):**
