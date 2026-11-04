@@ -1,0 +1,243 @@
+@font-face{font-family:Fraunces;src:url('/assets/fonts/fraunces-latin-normal.woff2') format('woff2');font-style:normal;font-weight:100 900;font-display:swap}
+@font-face{font-family:Fraunces;src:url('/assets/fonts/fraunces-latin-italic.woff2') format('woff2');font-style:italic;font-weight:100 900;font-display:swap}
+@font-face{font-family:Karla;src:url('/assets/fonts/karla-latin-normal.woff2') format('woff2');font-style:normal;font-weight:200 800;font-display:swap}
+/* NIGHTFALL — a low-luminance listening room. Theme surfaces, not a color inversion.
+   Decorative light never carries information. All states retain visible text. */
+:root{--night-radius:22px}
+html[data-theme=dark]{color-scheme:dark;--bg0:#101816;--bg1:#14201c;--panel:#18251f;--panel2:#14201b;--panel3:#21332a;--ink:#e2ece4;--muted:#afbeb1;--faint:#9eafa2;--amber:#bad4ac;--amber-hi:#d1e4c7;--amber-deep:#90b382;--foam:#a6d1b6;--foam-deep:#658c72;--line:#2d3c32;--line2:#425647;--violet:#c3b9da;--sky:#a2cbd1;--coral:#e4ab98;--surface-deep:#101816;--surface:#17221c;--surface-raised:#1c2b23;--accent:#bad4ac;--secondary:#afbeb1;--low:#9eafa2}
+/* Shared composition: generous type, tactile controls, and a single visual anchor. */
+.appearance-picker{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:100px;padding:5px 9px;color:var(--muted);font-size:17px}
+.appearance-picker select{border:0;background:transparent;color:inherit;font-size:11px;cursor:pointer;max-width:75px;padding:4px 1px;outline-offset:4px}
+.appearance-picker option{background:var(--panel);color:var(--ink)}
+#sidebar{width:216px;padding:34px 23px}
+#app{margin-left:216px;padding-inline:36px;max-width:1920px}
+.brand{font-size:34px;font-weight:600;letter-spacing:-1.8px;gap:7px}
+.brand-symbol{font-size:39px}
+.workspace-label{font-size:10px;letter-spacing:1.8px;margin-top:48px}
+#dock .dock-btn{height:49px;border-radius:11px;font-size:14px;font-weight:500;gap:13px}
+#dock .dock-btn.active{position:relative}
+#dock .dock-btn.active:after{content:'';position:absolute;right:14px;width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.8}
+#topbar{height:82px;gap:9px}
+#wordmark:after{font-size:12px;letter-spacing:.1px}
+.workspace-heading{padding:34px 0 29px}
+.workspace-heading p{font-size:10px;letter-spacing:2.3px}
+.workspace-heading h2{font-size:clamp(28px,2.7vw,39px);font-weight:350;letter-spacing:-1.2px;margin-top:8px}
+.quiet-time{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
+.quiet-time-dot{height:5px;width:5px;border-radius:50%;background:#97b485}
+.quiet-time .today-date{display:block;border-left:1px solid var(--line);padding-left:13px;margin-left:5px;color:var(--muted)}
+.workspace-grid{grid-template-columns:minmax(0,1fr) 282px;gap:24px}
+.conversation-card{border-radius:var(--night-radius);isolation:isolate;position:relative}
+.card-top{padding:23px 26px;font-size:9px;letter-spacing:1.6px}
+.card-top button{font-size:11px;min-height:28px}
+#stage{padding:32px 30px 25px;min-height:610px;position:relative}
+.companion-eyebrow{font-size:10px;letter-spacing:2px;margin-bottom:13px}
+#heading{font-size:clamp(29px,3.1vw,43px);font-weight:350;letter-spacing:-1.3px;line-height:1.2}
+#heading em{font-weight:350}
+.orb-zone{margin:34px 0 17px}
+.orb{width:226px}
+.orb-halo{position:absolute;inset:-18%;border-radius:50%;border:1px solid #9fbea017;box-shadow:0 0 0 22px #a8c9a505,0 0 0 44px #a8c9a503;pointer-events:none}
+.voice-wave{display:flex;align-items:center;justify-content:center;gap:4px;height:19px;opacity:.65;margin-bottom:4px}
+.voice-wave i{display:block;width:2px;height:calc(3px + mod(var(--n), 4)*2px);min-height:3px;border-radius:4px;background:var(--foam);transform-origin:center}
+#state-label{font-size:10px;letter-spacing:1.6px;line-height:1.5;text-align:center;min-height:18px}
+.voice-description{font-size:14px;margin-top:9px;line-height:1.6}
+#cta-row{margin-top:23px;gap:12px}
+#talk-cta{font-size:14px;padding:15px 24px;border-radius:100px;letter-spacing:.1px;font-weight:600;min-height:48px;gap:10px}
+#calm-cta{border-radius:100px;padding:15px 18px;font-size:12px;min-height:48px}
+.session-controls{margin-top:20px;gap:14px}
+.session-controls button{font-size:11px;min-height:28px}
+.session-controls button span{font-size:10px}
+.engine-label{font-size:10px;margin-top:6px;letter-spacing:.1px}
+.keyboard-hint{font-size:10px;margin-top:11px;margin-bottom:22px}
+#input-bar{border-radius:13px;min-height:55px;padding:6px 8px 6px 17px}
+#input-text{font-size:13px}
+#btn-send{height:36px;width:36px;border-radius:10px}
+#btn-mic{height:36px;width:32px}
+.conversation-footer{padding:17px 24px;font-size:10px;line-height:1.5;align-items:center}
+.resource-rail{gap:25px}
+.checkin-card{padding:25px 21px 18px;border-radius:19px;position:relative;overflow:hidden}
+.section-kicker{font-size:10px;letter-spacing:1.8px}
+.checkin-card h3{font-size:25px;letter-spacing:-.6px;margin-top:12px}
+.checkin-card>p{font-size:13px;line-height:1.7}
+.mood-options{margin:22px -4px 18px}
+.mood-options button{min-width:43px;min-height:53px;padding:8px 5px;border:1px solid transparent;font-size:25px}
+.mood-options small{font-size:10px;margin-top:10px}
+#mood-feedback{font-size:11px;line-height:1.6;padding-top:13px}
+.tool-section h3{font-size:22px;margin:9px 0 17px;letter-spacing:-.5px}
+.resource-card{min-height:134px;border-radius:15px;padding:19px 17px 70px;transition:transform .25s,border-color .25s}
+.resource-card b,.journal-link b{font-size:13px;font-weight:600}
+.resource-card small,.journal-link small{font-size:11px;line-height:1.5;margin-top:4px}
+.resource-card>span{position:relative;z-index:1}
+.resource-card .resource-icon{width:22px;flex-shrink:0}
+.breath-art{top:91px;width:150px;height:150px;left:calc(50% - 75px)}
+.sounds-card:after{content:'';position:absolute;inset:54% -20px -45px;background:repeating-radial-gradient(ellipse at 20% 100%,transparent 0 12px,#96c5b51a 13px 14px,transparent 15px 25px);transform:rotate(-8deg);pointer-events:none}
+.sound-art{font-size:22px;bottom:17px;opacity:.55}
+.journal-link{padding-top:20px;gap:13px}
+.daily-note{padding:0 9px 12px}
+.daily-note p{font-size:20px;font-weight:350;line-height:1.65;margin:13px 0 17px}
+.daily-note small{font-size:9px;letter-spacing:1.8px}
+#call-console{border-radius:17px}
+.call-buttons button{min-height:44px}
+.call-status{font-size:12px}
+#call-console>p{font-size:10px}
+/* Midnight palette. Never illuminate the entire viewport to communicate a state. */
+html[data-theme=dark],html[data-theme=dark] body{background:#101816;color:var(--ink)}
+html[data-theme=dark] body{background-image:radial-gradient(ellipse at 48% -10%,#30483225,transparent 48%);background-attachment:fixed}
+html[data-theme=dark] ::selection{background:#789a7259;color:#f0f6ee}
+html[data-theme=dark] #sidebar{background:linear-gradient(160deg,#14201a,#101813 75%);border-color:#29382d}
+html[data-theme=dark] .brand{color:#e1ebdb}
+html[data-theme=dark] .brand-symbol,html[data-theme=dark] .brand-dot{color:#b2c99e}
+html[data-theme=dark] :is(.workspace-label,.private-note p,#workspace-settings,.profile small,#wordmark,.workspace-heading p,.section-kicker,.today-date,.card-top,.card-top button,.companion-eyebrow,.voice-description,.engine-label,.keyboard-hint,.conversation-footer,.mood-options small,.checkin-card>p,#mood-feedback,.resource-card small,.journal-link small,.daily-note small,.session-controls button){color:var(--secondary)}
+html[data-theme=dark] :is(.private-note,.profile,#topbar,.card-top,.conversation-footer,#mood-feedback){border-color:var(--line)}
+html[data-theme=dark] .private-note{background:radial-gradient(ellipse at 0 20%,#435f2c14,transparent 80%)}
+html[data-theme=dark] .private-note svg{color:#a8c797}
+html[data-theme=dark] .private-note b{color:#cfddc7}
+html[data-theme=dark] #workspace-settings:hover{color:#d5e5cb}
+html[data-theme=dark] .profile>span{background:#233326;border-color:#3c503d;color:#c7dabb}
+html[data-theme=dark] #dock .dock-btn{color:#a5b29f}
+html[data-theme=dark] #dock .dock-btn.active{color:#d1e2bf;background:linear-gradient(100deg,#2b3d28,#243323);box-shadow:inset 0 0 0 1px #78926025}
+html[data-theme=dark] #dock .dock-btn:hover{background:#243326;color:#d5e4c9}
+html[data-theme=dark] .net-pill{background:#19251d;border-color:var(--line);color:#b4c3ab}
+html[data-theme=dark] .net-pill .dot{background:#9dbb82}
+html[data-theme=dark] .icon-btn{color:#a6b5a2}
+html[data-theme=dark] .icon-btn:hover{background:#253729;color:#dfebd4;border-color:var(--line2)}
+html[data-theme=dark] .appearance-picker{background:#18231c;border-color:#344531;color:#c5d6b6}
+html[data-theme=dark] .workspace-heading h2{color:#e0e9d9}
+html[data-theme=dark] .conversation-card{background:radial-gradient(ellipse at 50% 36%,#36523620,transparent 56%),linear-gradient(155deg,#19261e,#152019 65%,#17231b);border-color:#354630;box-shadow:0 18px 65px #050a062b,inset 0 1px #d7e9bf07}
+html[data-theme=dark] .conversation-card:before{content:'';position:absolute;z-index:-1;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' opacity='.11' filter='url(%23g)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");opacity:.12;pointer-events:none}
+html[data-theme=dark] .card-top i{background:#a5bd85;box-shadow:0 0 10px #b2d18023}
+html[data-theme=dark] #heading{color:#e0ead9;text-shadow:0 2px 30px #00000015}
+html[data-theme=dark] #heading em{color:#b8cea4}
+html[data-theme=dark] .orb{--ring:#a4d5bc40}
+html[data-theme=dark] .orb-glow{inset:-48%;background:radial-gradient(ellipse,#6d9f6745 0%,#608f5817 34%,transparent 65%);filter:blur(13px)}
+html[data-theme=dark] .orb-core{inset:6%;background:radial-gradient(ellipse at 34% 24%,#e6ecd2bd 0%,#bfd4b499 19%,transparent 51%),radial-gradient(ellipse at 68% 68%,#d2dfb859,transparent 50%),conic-gradient(from 210deg at 44% 54%,#315d49,#8daa8a,#c4d4b8,#5c8872,#1e4b43,#8fac83,#315d49);box-shadow:inset -15px -16px 30px #102c2380,inset 10px 8px 22px #f0f4dc25,0 0 44px #8fb37c1c,0 27px 52px #00000030;border:1px solid #daebc537}
+html[data-theme=dark] .orb-core:before{background:radial-gradient(ellipse at 40% 24%,#fff8 0%,transparent 52%);mix-blend-mode:soft-light;opacity:.7}
+html[data-theme=dark] .orb-core:after{background:repeating-radial-gradient(ellipse at -5% 120%,transparent 0 8px,#e9f4db1f 9px 10px,transparent 11px 21px);filter:blur(.6px);opacity:.8}
+html[data-theme=dark] .ring.r1{border-color:#a4cda425;inset:-8%;background:conic-gradient(from 40deg,transparent 75%,#c6dfb81a 90%,transparent)}
+html[data-theme=dark] .ring.r2{inset:-18%;border-color:#a4cda412;background:none}
+html[data-theme=dark] .ring.r3{inset:-30%;border:1px solid #afc59d08}
+html[data-theme=dark] .orb-halo{inset:2%;border:1px solid #e0eacd13;box-shadow:0 0 0 21px #a8c9a505,0 0 0 45px #a8c9a503}
+html[data-theme=dark] :is(#state-label,body.state-listening #state-label,body.state-speaking #state-label,body.state-thinking #state-label){color:#b4c99f}
+html[data-theme=dark] #talk-cta{background:linear-gradient(110deg,#c3d9ac,#abc897);color:#172b1a;border:1px solid #d4e4c11f;box-shadow:0 4px 22px #9dbd7514,inset 0 1px #f2ffe226}
+html[data-theme=dark] #talk-cta:hover{background:linear-gradient(110deg,#d0e2bd,#b7d2a5);box-shadow:0 5px 28px #9dbd7525;transform:translateY(-2px)}
+html[data-theme=dark] #calm-cta{border-color:#41533a;color:#c4d3b6;background:#21301e80}
+html[data-theme=dark] #calm-cta:hover{border-color:#7c9667;background:#2c4026;color:#e0ecd5}
+html[data-theme=dark] .session-controls button span{color:#bfdbab}
+html[data-theme=dark] .session-controls button[aria-pressed=false] span{color:#e0b498}
+html[data-theme=dark] .control-divider{background:#41533a}
+html[data-theme=dark] kbd{background:#202e21;border-color:#536948;color:#c7d7b6}
+html[data-theme=dark] #input-bar{background:#101b14a3;border-color:#3d5137;box-shadow:inset 0 1px 3px #00000015}
+html[data-theme=dark] #input-bar:focus-within{border-color:#a5be88;box-shadow:0 0 0 3px #abc58c12}
+html[data-theme=dark] #input-text{color:#e4efdb}
+html[data-theme=dark] #input-text::placeholder{color:#acbba1}
+html[data-theme=dark] #btn-mic{color:#bdcfb1}
+html[data-theme=dark] #btn-mic:hover{background:#30452b;color:#e0ecd5}
+html[data-theme=dark] #btn-send{background:#30442b;color:#d1e4bb}
+html[data-theme=dark] #btn-send:hover{background:#405a36;color:#eff9e5}
+html[data-theme=dark] #cap-user{color:#b2c6a9}
+html[data-theme=dark] #cap-ai{color:#e3eddb}
+html[data-theme=dark] .checkin-card{background:radial-gradient(ellipse at 100% 0,#57714023,transparent 80%),linear-gradient(145deg,#202e20,#1b281c);border-color:#3b4d32;box-shadow:inset 0 1px #b9d59a08}
+html[data-theme=dark] .checkin-card h3,html[data-theme=dark] .tool-section h3{color:#e1e9d8}
+html[data-theme=dark] .mood-options button{color:#c3d4ac}
+html[data-theme=dark] .mood-options button:hover,html[data-theme=dark] .mood-options button[aria-pressed=true]{background:#354a2c;border-color:#6a8751;color:#e7f3d6}
+html[data-theme=dark] .breathe-card{background:radial-gradient(ellipse at 50% 130%,#7b9e4a37,transparent 70%),#23301e;border-color:#3e5330;color:#dfebce}
+html[data-theme=dark] .sounds-card{background:radial-gradient(ellipse at 80% 150%,#5b9b7c2f,transparent 70%),#1b3028;border-color:#355346;color:#deeadf}
+html[data-theme=dark] .resource-card:hover{border-color:#819f65;box-shadow:0 10px 26px #00000020}
+html[data-theme=dark] :is(.resource-icon,.resource-card>span:last-of-type){color:#b6cd9f}
+html[data-theme=dark] .resource-card small{color:#c0cdb5}
+html[data-theme=dark] .sounds-card small{color:#b5ccbe}
+html[data-theme=dark] .breath-art{border-color:#a0bd673d;box-shadow:0 0 0 13px #9ab75d14,0 0 0 27px #9ab75d0b,0 0 0 41px #9ab75d05}
+html[data-theme=dark] .sound-art{color:#7bab93}
+html[data-theme=dark] .journal-link{color:#c2d4b3}
+html[data-theme=dark] .daily-note p{color:#c2cfb6}
+/* Complete surfaces: a dialog or typed message must not flash back to white. */
+html[data-theme=dark] .sheet .backdrop{background:#050d099c;backdrop-filter:blur(9px)}
+html[data-theme=dark] :is(.sheet .panel,#tx-panel){background:linear-gradient(155deg,#202f25,#16231b);border-color:#49613e;box-shadow:0 28px 100px #0007;color:var(--ink)}
+html[data-theme=dark] :is(.sheet-head h2,#chat-empty h3){color:#e2ebd8}
+html[data-theme=dark] :is(.set-group,.key-field input){background:#17251b;border-color:#3d5134;color:#d9e5cf}
+html[data-theme=dark] :is(input,textarea,select){color:var(--ink);accent-color:#b5ce99}
+html[data-theme=dark] :is(input:not([type=checkbox]):not([type=range]),textarea,select:not(.appearance-picker select)){background-color:#142118;border-color:#4a6040}
+html[data-theme=dark] :is(input,textarea)::placeholder{color:#acbba1}
+html[data-theme=dark] :is(.hub-row:hover,.j-entry:hover,.mixer-row:hover,.freq-card:hover,.val-chip:hover){background:#2b4027;border-color:#5b764c;color:#e3ecd7}
+html[data-theme=dark] :is(.seg button.on,.mini-select button.on,.tag-cloud button.on){background:#344b2b;border-color:#839f66;color:#d7eac2}
+html[data-theme=dark] .btn-amber{background:#b8d1a0;color:#162612;box-shadow:none}
+html[data-theme=dark] .btn-amber:hover{background:#c9dfb5}
+html[data-theme=dark] .btn-foam{background:#2e472b;border-color:#75985e;color:#d3e6c0}
+html[data-theme=dark] .btn-ghost{border-color:#586e48;color:#cad9bd}
+html[data-theme=dark] .btn-ghost:hover{background:#35482c;color:#e3eed7}
+html[data-theme=dark] .toast{background:#293d28;border-color:#718a58;color:#e3edd5;box-shadow:0 14px 50px #0006}
+html[data-theme=dark] .msg.ai .bub{background:#263825;color:#dce9d2;border-color:#405536}
+html[data-theme=dark] .msg.user .bub{background:#bdd3a7;color:#1d3017}
+html[data-theme=dark] .msg.ai .av{background:#657e50}
+html[data-theme=dark] .msg.user .av{background:#3b5130;color:#d5e8bc}
+html[data-theme=dark] #chat-empty p{color:var(--muted)}
+html[data-theme=dark] .chat-suggest button{background:#263624;border-color:#566d42;color:#d1e2bd}
+html[data-theme=dark] #call-console{background:#18281bbd;border-color:#4c663d}
+html[data-theme=dark] .call-status{color:#d4e6c1}
+html[data-theme=dark] .call-status time,html[data-theme=dark] #call-console>p{color:#b3c7a5}
+html[data-theme=dark] .call-buttons button{background:#2e4227;color:#e0edd3;border-color:#5e7849}
+html[data-theme=dark] .call-buttons #call-hangup{background:#813e36;border-color:#c88772;color:#fff0e6}
+html[data-theme=dark] .call-buttons #call-mute[aria-pressed=true]{background:#533a2a;color:#f4d5b9}
+html[data-theme=dark] .in-call #talk-cta{background:#30452a;border-color:#6e8b56;color:#dfedd1}
+html[data-theme=dark] #crisis-card{background:#342821;border-color:#b88c70;color:#edd9c5}
+html[data-theme=dark] #crisis-card h4{color:#f0dcc7}
+html[data-theme=dark] #crisis-card p{color:#dbc4ad}
+html[data-theme=dark] :focus-visible{outline:2px solid #c1dc9b;outline-offset:4px}
+html[data-theme=dark] button:hover{color:inherit}
+html[data-theme=dark] .sheet .panel::-webkit-scrollbar-thumb{background:#587149}
+/***** Light remains an intentional, warmer alternate, never the first-visit default. *****/
+html[data-theme=light]{color-scheme:light}
+html[data-theme=light] .appearance-picker{color:#42553d;background:#f0f4e9}
+html[data-theme=light] .voice-description,html[data-theme=light] .engine-label,html[data-theme=light] .keyboard-hint{color:#52634b}
+html[data-theme=light] .conversation-footer,html[data-theme=light] .section-kicker{color:#53664a}
+/* Motion is slow and low-amplitude. No blinking or luminous full-screen effects. */
+@media(prefers-reduced-motion:no-preference){
+  html:not(.rm) .orb-float{animation:nightFloat 9s ease-in-out infinite}
+  html:not(.rm) .orb-core:after{animation:pearlDrift 18s ease-in-out infinite alternate}
+  html:not(.rm) body.state-listening .voice-wave i,html:not(.rm) body.state-speaking .voice-wave i{animation:voiceTide 1.4s ease-in-out infinite alternate;animation-delay:calc(var(--n)*-0.09s)}
+}
+@keyframes nightFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes pearlDrift{from{transform:rotate(-8deg);opacity:.45}to{transform:rotate(8deg);opacity:.8}}
+@keyframes voiceTide{from{transform:scaleY(.6)}to{transform:scaleY(2.1)}}
+@media(min-width:1500px){#app{padding-inline:55px}.workspace-grid{grid-template-columns:minmax(0,1fr) 310px}#stage{min-height:660px;padding-top:40px}.orb{width:252px}.orb-zone{margin:38px 0 23px}}
+@media(max-width:1180px){#sidebar{width:190px;padding-inline:17px}#app{margin-left:190px;padding-inline:24px}.workspace-grid{grid-template-columns:minmax(0,1fr) 249px;gap:18px}.quiet-time>span:not(.today-date){display:none}.quiet-time .today-date{border:0;padding:0}.workspace-heading h2{font-size:32px}#stage{padding-inline:20px}.orb{width:210px}#heading{font-size:33px}.conversation-footer{flex-direction:column;gap:5px}.mood-options button{min-width:38px}.resource-card{padding-inline:13px}}
+@media(max-width:980px){.workspace-grid{grid-template-columns:minmax(0,1fr)}.resource-rail{display:grid;grid-template-columns:1fr 1fr;gap:23px}.tool-section{grid-row:span 2}.quiet-time{display:none}#stage{min-height:600px}.daily-note{display:block}.checkin-card{align-self:start}.conversation-footer{flex-direction:row}}
+@media(max-width:650px){
+  #sidebar{width:auto;padding:20px 4px 0}#app{margin-left:0;padding:0 17px 100px}#topbar{top:17px;right:17px;height:36px;gap:4px}.brand{font-size:29px}.brand-symbol{font-size:32px}.appearance-picker{font-size:15px;padding:3px 6px}.appearance-picker select{font-size:10px;max-width:61px}.net-pill{display:none}#btn-view,#btn-settings{width:31px;height:32px}.workspace-heading{padding:30px 1px 23px}.workspace-heading p{font-size:9px;letter-spacing:2px}.workspace-heading h2{font-size:31px;margin-top:9px}#stage{padding:27px 16px 20px;min-height:570px}.companion-eyebrow{font-size:9px;letter-spacing:1.6px}#heading{font-size:31px}.orb{width:194px}.orb-zone{margin:35px 0 20px}.card-top{padding:15px 17px;font-size:8px;letter-spacing:1.2px}.card-top button{font-size:10px}.voice-description{font-size:12px}#state-label{font-size:9px;letter-spacing:1.1px}#talk-cta{font-size:13px;padding:14px 20px}#calm-cta{font-size:11px;padding:14px 12px}#cta-row{gap:8px}.session-controls{margin-bottom:0;gap:11px}.session-controls button{font-size:10px}.engine-label{font-size:9px;margin:8px 0 21px}.conversation-footer{flex-direction:column;font-size:9px;padding:15px 13px;gap:6px}.resource-rail{grid-template-columns:1fr;gap:26px}.tool-section{grid-row:auto}.resource-card{padding-inline:19px}.checkin-card{padding:24px}.daily-note{padding:0 12px 15px}#dock .dock-btn{height:49px;font-size:10px;gap:5px}#dock .dock-btn.active:after{display:none}html[data-theme=dark] #dock{background:#152019f5;border-color:#3a4c32;box-shadow:0 -8px 35px #0003}html[data-theme=dark] #dock .dock-btn.active{background:#2b3d25}#call-console{margin-top:18px}.call-buttons{gap:7px}.call-buttons button{font-size:10px;padding-inline:9px}.call-status{font-size:11px}
+}
+@media(max-width:360px){.brand{font-size:26px;gap:3px}.brand-symbol{font-size:28px}#topbar{gap:1px;right:12px}.appearance-picker{gap:2px;padding-inline:4px}.workspace-heading h2{font-size:28px}#heading{font-size:28px}#calm-cta{padding-inline:9px}#talk-cta{padding-inline:16px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+html.rm *,html.rm *:before,html.rm *:after{animation:none!important;transition:none!important}
+@media(forced-colors:active){.orb-core{background:Canvas;border:2px solid CanvasText}.conversation-card,.resource-card,.checkin-card{border:1px solid CanvasText}.voice-wave i{background:CanvasText}}
+
+/* Hidden safety UI is truly absent until a crisis is detected, including full-page capture. */
+#crisis-card:not(.show){display:none}
+.brand-symbol{display:grid;place-items:center;flex-shrink:0;width:31px}
+.brand-symbol svg{width:31px;height:31px;stroke-width:1.3}
+.appearance-picker>svg{width:15px;height:15px}
+.mood-options button>svg{width:29px;height:29px;margin:auto;display:block;stroke-width:1.2}
+#dock .dock-btn span{font-size:13px;text-transform:none;letter-spacing:0;font-weight:500}
+@media(min-width:981px) and (max-height:950px){
+  #topbar{height:68px}.workspace-heading{padding:23px 0 22px}.workspace-heading h2{font-size:34px}.card-top{padding:14px 24px}#stage{min-height:550px;padding-top:25px;padding-bottom:20px}#heading{font-size:37px}.companion-eyebrow{margin-bottom:9px}.orb{width:184px}.orb-zone{margin:25px 0 12px}.voice-description{font-size:13px;margin-top:5px}#cta-row{margin-top:17px}.session-controls{margin-top:12px}.keyboard-hint{margin:7px 0 15px}.engine-label{margin-top:3px}.resource-rail{gap:20px}.checkin-card{padding:21px 20px 16px}.daily-note p{font-size:18px}.resource-card{min-height:122px;padding-bottom:60px}
+}
+@media(max-width:650px){.brand-symbol{width:24px}.brand-symbol svg{width:24px;height:24px}.brand{gap:6px;font-size:27px}#dock .dock-btn span{font-size:10px}.mood-options button>svg{width:30px;height:30px}}
+
+.card-top button,.conversation-footer>span:first-child{display:flex;align-items:center;gap:7px}
+.card-top button svg,.resource-card>span:last-of-type svg,.journal-link>span:last-child svg{width:13px;height:13px}
+.conversation-footer>span:first-child svg{width:12px;height:12px}
+.sound-art{display:flex;align-items:center;justify-content:space-between;height:29px;gap:5px}
+.sound-art i{display:block;width:2px;background:currentColor;border-radius:4px;flex-shrink:0}
+html[data-theme=dark] #input-bar{border-color:#718263}
+html[data-theme=dark] #calm-cta{border-color:#718263}
+@media(max-width:650px){
+  .set-row:has(input[type=text],input[type=tel],.key-field,select){flex-direction:column;align-items:stretch;gap:11px}
+  .set-row:has(input[type=text],input[type=tel],.key-field,select) .lab{width:100%}
+  .set-row input[type=text],.set-row input[type=tel],.set-row select,.key-field,.key-field input{width:100%;max-width:100%}
+  .set-row .lab small{font-size:12px;line-height:1.6}
+}
+.conversation-card{align-self:start}
+
+/* Product name; retain Calmora as the maker attribution. */
+.brand-name{display:flex;flex-direction:column;font-size:22px;letter-spacing:1px;line-height:1.1;font-weight:600}
+.brand-name small{font-size:10px;font-weight:400;letter-spacing:.8px;color:var(--muted);margin-top:6px}
+@media(max-width:650px){.brand-name{font-size:18px;letter-spacing:.6px}.brand-name small{font-size:8px;margin-top:4px}.brand{gap:7px}}
+@media(max-width:360px){.brand-name{font-size:15px;letter-spacing:.3px}.brand-symbol{width:20px}.brand-symbol svg{width:20px;height:20px}}
