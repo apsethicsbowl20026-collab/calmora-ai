@@ -1,8 +1,8 @@
 /* Calmora service worker — makes the app installable and works offline.
    Strategy: cache the app shell; always hit the network for /api/* (the AI);
    network-first for page navigations with a cached fallback. */
-const CACHE = 'calmora-v1';
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
+const CACHE = 'calmora-v3-openrouter-calls';
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg', '/workspace.css'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {

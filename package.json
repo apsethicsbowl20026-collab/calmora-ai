@@ -1,0 +1,7 @@
+{
+  "name": "calmora-ai",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test tests/*.test.js", "dev": "python -m http.server 3000 --bind 0.0.0.0" },
+  "devDependencies": { "jsdom": "^26.1.0" }
+}
