@@ -3,3 +3,7 @@ playwright-report/
 test-results/
 .env
 .dev.vars
+
+# Python document-build environments and cache
+.venv/
+__pycache__/

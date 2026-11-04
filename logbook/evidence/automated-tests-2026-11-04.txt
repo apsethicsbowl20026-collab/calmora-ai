@@ -1,0 +1,86 @@
+
+> test
+> node --test tests/*.test.js
+
+TAP version 13
+# Subtest: workspace boots, controls share settings, dialogs and mood data work
+ok 1 - workspace boots, controls share settings, dialogs and mood data work
+  ---
+  duration_ms: 566.723664
+  type: 'test'
+  ...
+# Subtest: unsupported speech input falls back to the text field
+ok 2 - unsupported speech input falls back to the text field
+  ---
+  duration_ms: 335.025543
+  type: 'test'
+  ...
+# Subtest: listening can end explicitly and stale recognizers cannot replace a new session
+ok 3 - listening can end explicitly and stale recognizers cannot replace a new session
+  ---
+  duration_ms: 345.250186
+  type: 'test'
+  ...
+# Subtest: call persists across silence, mute releases recognition, unmute reconnects and hangup cleans up
+ok 4 - call persists across silence, mute releases recognition, unmute reconnects and hangup cleans up
+  ---
+  duration_ms: 696.739099
+  type: 'test'
+  ...
+# Subtest: microphone denial ends the call and offers an actionable recovery
+ok 5 - microphone denial ends the call and offers an actionable recovery
+  ---
+  duration_ms: 303.716067
+  type: 'test'
+  ...
+# Subtest: no external speech provider or additional keyed integration remains
+ok 6 - no external speech provider or additional keyed integration remains
+  ---
+  duration_ms: 0.60368
+  type: 'test'
+  ...
+# Subtest: a spoken turn streams a reply, supports barge-in, and resumes without another call click
+ok 7 - a spoken turn streams a reply, supports barge-in, and resumes without another call click
+  ---
+  duration_ms: 2221.942447
+  type: 'test'
+  ...
+# Subtest: OpenRouter BYOK uses its streaming endpoint directly without an extra service
+ok 8 - OpenRouter BYOK uses its streaming endpoint directly without an extra service
+  ---
+  duration_ms: 1238.667841
+  type: 'test'
+  ...
+# Subtest: first paint is dark even when the OS uses light mode
+ok 9 - first paint is dark even when the OS uses light mode
+  ---
+  duration_ms: 182.28717
+  type: 'test'
+  ...
+# Subtest: appearance selectors synchronize and save an explicit preference
+ok 10 - appearance selectors synchronize and save an explicit preference
+  ---
+  duration_ms: 177.207676
+  type: 'test'
+  ...
+# Subtest: system preference tracks OS changes and a saved light choice restores before paint
+ok 11 - system preference tracks OS changes and a saved light choice restores before paint
+  ---
+  duration_ms: 335.054968
+  type: 'test'
+  ...
+# Subtest: core Nightfall text color pairs meet WCAG AA normal-text contrast
+ok 12 - core Nightfall text color pairs meet WCAG AA normal-text contrast
+  ---
+  duration_ms: 0.562173
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6804.048796
