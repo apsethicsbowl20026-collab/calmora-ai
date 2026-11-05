@@ -661,6 +661,60 @@ body.mode-chat #input-bar{width:min(760px,100%);margin-top:8px}
 /* view toggle tint */
 #btn-view{color:var(--foam)}
 body.mode-chat #btn-view{color:var(--amber)}
+/* voice-agent presence */
+#agent-trace{width:min(760px,100%);margin:10px auto 0;display:flex;flex-direction:column;gap:10px}
+#agent-trace[hidden]{display:none}
+#agent-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.agent-action{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(166,209,182,.28);background:rgba(23,34,28,.72);color:#cfe7d5;border-radius:999px;padding:8px 12px;font-size:11px;letter-spacing:.15px;backdrop-filter:blur(12px);animation:agentIn .28s cubic-bezier(.2,.9,.3,1) both}
+.agent-action svg{width:14px;height:14px;stroke-width:1.8}
+.agent-action[data-state="busy"]{border-color:rgba(186,212,172,.55);box-shadow:0 0 0 3px rgba(186,212,172,.08),0 0 28px rgba(166,209,182,.12)}
+.agent-action[data-state="busy"] svg{animation:agentPulse 1.15s ease-in-out infinite}
+.agent-action[data-state="error"]{border-color:rgba(228,171,152,.5);color:#f0c3b6}
+.agent-action.is-settled{opacity:.72}
+#agent-sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+#agent-sources[hidden]{display:none}
+.source-card{display:flex;align-items:center;gap:9px;text-decoration:none;border:1px solid var(--line2);border-radius:13px;padding:10px 11px;background:rgba(255,255,255,.035);color:var(--ink);transition:transform .2s,border-color .2s;min-width:0}
+.source-card:hover{transform:translateY(-1px);border-color:var(--foam)}
+.source-index{display:grid;place-items:center;width:22px;height:22px;flex:0 0 22px;border-radius:50%;background:rgba(186,212,172,.16);color:var(--amber-hi);font-size:11px;font-variant-numeric:tabular-nums}
+.source-copy{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.source-copy b{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.source-copy small{font-size:9px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.source-card>svg{margin-left:auto;width:13px;height:13px;flex:0 0 auto;color:var(--muted)}
+@keyframes agentIn{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes agentPulse{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.13);opacity:1}}
+body.in-call{overflow:hidden}
+body.in-call #sidebar,body.in-call #topbar,body.in-call .workspace-heading,body.in-call .resource-rail,body.in-call #dock,body.in-call .conversation-footer,body.in-call #checkin-pill,body.in-call .keyboard-hint,body.in-call .session-controls{display:none !important}
+body.in-call #app{margin:0;padding:0;min-height:100dvh;height:100dvh;display:grid;place-items:center}
+body.in-call .workspace-grid{display:block;width:100%;height:100dvh;max-width:none}
+body.in-call .conversation-card{position:fixed;inset:0;z-index:40;border:0;border-radius:0;overflow:hidden auto;background:radial-gradient(circle at 50% 22%,#263a2d 0%,#14221a 42%,#0d1511 100%);box-shadow:none}
+body.in-call .card-top{position:absolute;top:0;left:0;right:0;z-index:3;border-bottom:0;background:linear-gradient(180deg,rgba(10,17,13,.88),transparent);padding:18px 22px;color:#b9cdb0}
+body.in-call .card-top button{color:#d4e6c8}
+body.in-call #stage{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:72px 22px 28px;max-width:980px;margin:0 auto;overflow:visible}
+body.in-call .companion-eyebrow,body.in-call .voice-description,body.in-call #greeting{display:none}
+body.in-call .orb-zone{margin:0 auto 6px}
+body.in-call .orb{width:min(310px,58vw)}
+body.in-call #heading{text-align:center;font-size:clamp(30px,4.5vw,56px);line-height:1.05;max-width:900px}
+body.in-call .voice-wave{height:28px;gap:5px;margin:8px 0 2px}
+body.in-call .voice-wave i{width:3px;min-height:4px;background:#b4d7bd;box-shadow:0 0 16px rgba(180,215,189,.32)}
+body.in-call #state-label{font-size:12px;letter-spacing:2px;color:#c6e2c8;min-height:20px}
+body.in-call #captions{width:min(880px,100%);max-height:28vh;overflow:auto;margin:14px auto 0;text-align:center;padding:0 4px}
+body.in-call #cap-user{font-size:12px;color:#91a98e;margin-bottom:8px}
+body.in-call #cap-ai{font-size:clamp(19px,2.25vw,30px);line-height:1.38;color:#edf6e9;font-weight:350;text-wrap:pretty}
+body.in-call #agent-trace{margin-top:14px}
+body.in-call #cta-row{margin-top:18px}
+body.in-call #talk-cta{background:rgba(190,218,171,.14);border:1px solid rgba(190,218,171,.28);color:#e6f4dd;box-shadow:none}
+body.in-call #call-console{width:min(560px,100%);margin:14px 0 0;background:rgba(19,31,24,.72);border-color:rgba(190,218,171,.24);backdrop-filter:blur(14px)}
+body.in-call #call-console>p{color:#9eb397}
+body.in-call #input-bar{margin-top:12px;max-width:720px;background:rgba(15,25,19,.62);border-color:rgba(190,218,171,.2)}
+body.in-call #input-text{color:#edf6e9}
+body.in-call #input-text::placeholder{color:#8ca085}
+body.in-call #btn-send,body.in-call #btn-mic{color:#d4e6c8}
+body.mode-chat #agent-trace{order:5;width:min(760px,100%);max-height:170px;overflow:auto}
+body.mode-chat #agent-actions{justify-content:flex-start}
+body.mode-chat #agent-sources{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+@media(max-width:760px){body.in-call #stage{padding:70px 14px 22px}body.in-call .orb{width:min(240px,64vw)}body.in-call #heading{font-size:34px}body.in-call #cap-ai{font-size:19px}#agent-sources{grid-template-columns:1fr}.source-copy b{max-width:210px}.agent-action{font-size:10px;padding:7px 10px}}
+@media(prefers-reduced-motion:reduce){.agent-action,.agent-action[data-state="busy"] svg{animation:none !important}}
+html.rm .agent-action,html.rm .agent-action[data-state="busy"] svg{animation:none !important}
 @media(prefers-reduced-motion:reduce){.msg,.typing i{animation:none !important}}
 html.rm .msg,html.rm .typing i{animation:none !important}
 </style>
@@ -695,6 +749,7 @@ html.rm .msg,html.rm .typing i{animation:none !important}
 <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
 <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 0 1-11.6 7.1L4 20l1.5-4.4A8 8 0 1 1 21 11.5z"/><path d="M8.5 11h7M8.5 14h4.5"/></symbol>
 <symbol id="i-orb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13"/></symbol>
@@ -753,6 +808,7 @@ html.rm .msg,html.rm .typing i{animation:none !important}
     </div>
     <div class="voice-wave" aria-hidden="true"><i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i><i style="--n:3"></i><i style="--n:4"></i><i style="--n:5"></i><i style="--n:6"></i><i style="--n:7"></i><i style="--n:8"></i><i style="--n:9"></i><i style="--n:10"></i><i style="--n:11"></i><i style="--n:12"></i><i style="--n:13"></i><i style="--n:14"></i><i style="--n:15"></i><i style="--n:16"></i><i style="--n:17"></i><i style="--n:18"></i><i style="--n:19"></i><i style="--n:20"></i></div><p id="state-label" aria-hidden="true">tap to talk · type if you prefer</p>
     <div id="captions"><p id="cap-user"></p><p id="cap-ai" lang="en"></p></div>
+    <div id="agent-trace" aria-label="Agent activity" hidden><div id="agent-actions" aria-live="polite" aria-label="Agent actions"></div><div id="agent-sources" aria-label="Sources" hidden></div></div>
     <p class="voice-description">No perfect words needed. I’m here to listen.</p>
     <div id="cta-row">
       <button id="talk-cta"><svg aria-hidden="true"><use href="#i-mic"/></svg><span id="talk-cta-label">Talk to PRIMØSHU</span></button>
@@ -967,12 +1023,17 @@ html.rm .msg,html.rm .typing i{animation:none !important}
         <span class="key-field"><input type="password" id="set-key" spellcheck="false" autocomplete="off" placeholder="sk-or-v1-…" aria-label="OpenRouter API key"/>
         <button type="button" class="key-eye" id="set-key-eye" aria-label="Toggle key visibility" aria-pressed="false"><svg aria-hidden="true"><use href="#i-eye"/></svg></button></span>
       </div>
+      <div class="set-row"><span class="lab"><b>Groq access password</b><small>Optional shared password. When entered, PRIMØSHU uses the server’s Groq key for this session. Nothing is written to saved settings.</small></span>
+        <span class="key-field"><input type="password" id="set-groq-password" spellcheck="false" autocomplete="off" placeholder="Enter Groq password" aria-label="Groq access password"/>
+        <button type="button" class="key-eye" id="set-groq-password-eye" aria-label="Toggle Groq password visibility" aria-pressed="false"><svg aria-hidden="true"><use href="#i-eye"/></svg></button></span>
+      </div>
+      <p class="key-status" id="groq-status">Groq is locked. Replies use OpenRouter by default.</p>
       <div class="set-row"><span class="lab"><b>API endpoint</b><small>Your /api/chat server (Cloudflare Pages Function). It holds the system prompt, the key, and rate limits.</small></span><input type="text" id="set-endpoint" spellcheck="false" aria-label="API endpoint"/></div>
       <div class="set-row"><span class="lab"><b>Model</b><small>OpenRouter model id. <b>openrouter/free</b> auto-picks the best free one. Try <b>meta-llama/llama-3.3-70b-instruct:free</b> or <b>qwen/qwen3-next-80b-a3b-instruct:free</b>.</small></span><input type="text" id="set-model" spellcheck="false" aria-label="Model"/></div>
       <div class="set-row"><span class="lab"><b>Auto-continue listening</b><small>Mic reopens after PRIMØSHU finishes speaking.</small></span><span class="switch"><input type="checkbox" id="set-auto"/><span class="tr"></span></span></div>
     </div>
     <p class="key-status" id="key-status"></p>
-    <p class="hint-line">Replies come from your <b>/api/chat</b> server, which adds the prompt and key. <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" style="color:var(--foam)">Get a free OpenRouter key →</a> and paste it above to use your own quota (optional). No server or key? The offline companion still talks.</p>
+    <p class="hint-line">Default replies come from <b>/api/chat</b>. If OpenRouter fails, the server can fall back to keyless Kilo Auto (<code>kilo-auto/free</code>) for non-crisis turns; enter the shared Groq password above to use Groq instead. <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" style="color:var(--foam)">Get a free OpenRouter key →</a></p>
     <p class="sec-label">Language</p>
     <div class="set-group">
       <div class="set-row"><span class="lab"><b>Interface &amp; voice language</b><small>Changes the interface, speech recognition, spoken replies, and AI replies.</small></span><select id="set-lang" aria-label="Language"></select></div>
@@ -1074,6 +1135,10 @@ var S=Object.assign({
   rate:1,voice:'',emLabel:'',emNumber:'',trustName:'',trustNumber:'',rm:false,masterVol:0.8,chatView:false,lang:(navigator.language||'en').slice(0,2)
 },store.get('calmora:settings',{}));
 function saveSettings(){store.set('calmora:settings',S)}
+/* Groq password is intentionally session-only; never persist shared credentials. */
+var groqPassword='';
+var currentTurnSources=[];
+var agentActionTimers={};
 /* ══════════════ i18n / multi-language ══════════════ */
 var LANGS=[
   {code:'en',name:'English',stt:'en-US',dir:'ltr'},
@@ -1702,6 +1767,7 @@ $('#crisis-dismiss').addEventListener('click',function(){$('#crisis-card').class
 
 /* ─── Comprehensive clinical-grade system prompt ─── */
 var CLIENT_TOOLS = [
+  { type: 'function', function: { name: 'web_search', description: 'Search the live web for current facts, news, or source-dependent information. Use sparingly and only when fresh sources are needed.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'A focused search query.' }, time_range: { type: 'string', enum: ['day','week','month','year'], description: 'Optional recency limit for news-like questions.' }, topic: { type: 'string', enum: ['general','news'], description: 'Search category. Use news for current events.' } }, required: ['query'] } } },
   { type: 'function', function: { name: 'play_sound', description: "Play a comforting ambient sound in the user's browser to help them relax, focus, or sleep.", parameters: { type: 'object', properties: { sound: { type: 'string', enum: ['rain','ocean','forest','brown','fire','night','cave'], description: 'Which soundscape to play.' } }, required: ['sound'] } } },
   { type: 'function', function: { name: 'stop_sounds', description: 'Stop all currently playing sounds.', parameters: { type: 'object', properties: {} } } },
   { type: 'function', function: { name: 'note_thought', description: "Save something the user said as a private journal entry so they can reflect on it later.", parameters: { type: 'object', properties: { text: { type: 'string', description: "The thought or note to save, in the user's own words." }, mood: { type: 'string', enum: ['Heavy','Low','Okay','Good','Light'], description: 'Optional mood label.' } }, required: ['text'] } } },
@@ -1727,6 +1793,7 @@ YOUR JOB — HELP, DON'T JUST REFLECT
 - Teach a technique when it fits: slow breathing (in 4, out 6), a CBT reframe ("what's the evidence? what's a kinder read?"), one tiny next action, shrinking overwhelm to a single step, or naming three visible things.
 - Normalise with light psychoeducation when useful ("that's your alarm system reacting, not a fact about the future").
 - Point to the app's tools when relevant: breathing, 5-4-3-2-1 grounding, rain/ocean sounds, journaling, sleep mode.
+- Use web_search only for current facts or source-dependent claims. Never search to soothe ordinary emotional distress. When sources are used, give a short answer and let the interface show them.
 - At most one gentle question. Offer a next step when wanted; sometimes being heard is enough.
 - Match the moment: practical when they want to fix something, softer when they need to be heard.
 
@@ -1841,14 +1908,26 @@ function streamOpenRouter(msgs,safetyFlag,handlers){
 }
 
 function streamRemote(msgs,safetyFlag,handlers){
-  if(S.apiKey)return streamOpenRouter(msgs,safetyFlag,handlers);
+  if(S.apiKey && !groqPassword)return streamOpenRouter(msgs,safetyFlag,handlers);
   var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort()},60000);
-  var req={v:2,model:S.model,messages:msgs,safety:safetyFlag||null,key:S.apiKey||null,lang:S.lang||'en',stream:true,reasoning:{exclude:true}};
+  var req={v:2,model:S.model,messages:msgs,safety:safetyFlag||null,key:S.apiKey||null,groqPassword:groqPassword||null,lang:S.lang||'en',stream:true,reasoning:{exclude:true}};
   var finishReason='stop';
   fetch(S.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(req),signal:ctrl.signal})
-  .then(function(res){
+  .then(async function(res){
     clearTimeout(to);
-    if(!res.ok||!res.body){var code='http_'+res.status;if(res.status===429)code='rate_limited';throw new Error(code)}
+    if(!res.ok||!res.body){
+      var code='http_'+res.status;
+      try{
+        var raw=await res.text();
+        var lines=raw.split('\n');
+        for(var i=0;i<lines.length;i++){
+          var parsed;try{parsed=JSON.parse(lines[i])}catch(e){continue}
+          if(parsed&&(parsed.code||parsed.error)){code=parsed.code||parsed.error;break}
+        }
+      }catch(e){}
+      if(res.status===429)code='rate_limited';
+      throw new Error(code)
+    }
     var reader=res.body.getReader(),dec=new TextDecoder(),buf='';
     function pump(){return reader.read().then(function(chunk){
       if(chunk.done)return;buf+=dec.decode(chunk.value,{stream:true});var idx;
@@ -1868,39 +1947,97 @@ function streamRemote(msgs,safetyFlag,handlers){
   return function(){try{ctrl.abort()}catch(e){}};
 }
 
-/* ============ Voice Agent tools (run in the browser) ============ */
+/* ============ Voice Agent tools (run in the browser / via /api) ============ */
+function sourceDomain(url){try{return new URL(url).hostname.replace(/^www\./,'')}catch(e){return 'source'}}
+function safeSourceUrl(url){try{var u=new URL(url);return u.protocol==='http:'||u.protocol==='https:'?u.toString():null}catch(e){return null}}
+function clearAgentTrace(){
+  currentTurnSources=[];
+  var trace=$('#agent-trace'),actions=$('#agent-actions'),sources=$('#agent-sources');
+  if(actions)actions.innerHTML='';
+  if(sources){sources.innerHTML='';sources.hidden=true}
+  if(trace)trace.hidden=true;
+  Object.keys(agentActionTimers).forEach(function(key){clearTimeout(agentActionTimers[key])});
+  agentActionTimers={};
+}
+function showAgentTrace(){var trace=$('#agent-trace');if(trace)trace.hidden=false}
+function agentAction(key,label,state,icon){
+  showAgentTrace();
+  var actions=$('#agent-actions');if(!actions)return;
+  var safeKey=String(key||'tool').replace(/[^a-z0-9_-]/gi,'_').slice(0,48);
+  var item=actions.querySelector('[data-action-key="'+safeKey+'"]');
+  if(!item){item=document.createElement('div');item.className='agent-action';item.setAttribute('data-action-key',safeKey);actions.appendChild(item)}
+  item.setAttribute('data-state',state||'done');
+  item.innerHTML='<svg aria-hidden="true"><use href="#'+(icon||'i-pulse')+'"/></svg><span>'+esc(label)+'</span>';
+  clearTimeout(agentActionTimers[safeKey]);
+  if(state!=='busy')agentActionTimers[safeKey]=setTimeout(function(){if(item.isConnected&&item.getAttribute('data-state')!=='busy'){item.classList.add('is-settled')}},1800);
+}
+function renderAgentSources(sources){
+  currentTurnSources=(sources||[]).slice(0,5);
+  var box=$('#agent-sources');if(!box)return;box.innerHTML='';
+  currentTurnSources.forEach(function(source,index){
+    var url=safeSourceUrl(source.url);if(!url)return;
+    var link=document.createElement('a');link.className='source-card';link.href=url;link.target='_blank';link.rel='noopener noreferrer';
+    link.innerHTML='<span class="source-index">'+(index+1)+'</span><span class="source-copy"><b>'+esc(source.title||'Source')+'</b><small>'+esc(sourceDomain(url))+'</small></span><svg aria-hidden="true"><use href="#i-ext"/></svg>';
+    box.appendChild(link);
+  });
+  box.hidden=!box.children.length;
+  showAgentTrace();
+}
+async function searchWeb(args){
+  agentAction('web_search','Searching the web…','busy','i-search');
+  var label=$('#state-label');if(label)label.textContent='searching the web…';
+  try{
+    var response=await fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:String(args.query||'').slice(0,400),time_range:args.time_range||undefined,topic:args.topic||'general',max_results:5})});
+    var payload=await response.json().catch(function(){return{}});
+    if(!response.ok)throw new Error(payload.error||'search_error');
+    var sources=(payload.results||[]).map(function(item){return{title:item.title||'Source',url:item.url,content:item.content||''}});
+    renderAgentSources(sources);
+    agentAction('web_search','Checked the web','done','i-search');
+    if(!sources.length)return 'No sources were found for that search.';
+    return sources.map(function(source,index){return '['+(index+1)+'] '+source.title+' — '+source.url+'\n'+source.content}).join('\n\n').slice(0,1900);
+  }catch(error){
+    agentAction('web_search','Web search unavailable','error','i-search');
+    return 'Web search is not available right now. Answer from general knowledge only, and be clear about uncertainty.';
+  }finally{
+    if(typeof setVoice==='function'&&V.voice==='thinking')setVoice('thinking');
+  }}
 function moodLevelFromName(name){var m={Heavy:1,Low:2,Okay:3,Good:4,Light:5};return m[name]||null}
 function soundName(id){var l=LAYERS.filter(function(d){return d.id===id})[0];return l?l.name:id}
-function executeTool(name,argsRaw){
+async function executeTool(name,argsRaw){
   var args={};try{args=JSON.parse(argsRaw||'{}')}catch(e){args={}}
   try{
+    if(name==='web_search')return await searchWeb(args);
     if(name==='play_sound'){
       var id=args.sound;
-      if(engines[id]){LAYERS.forEach(function(d){engines[d.id].stop()});engines[id].start();renderSoundRows();toast('Playing '+soundName(id),'good');return 'Started the '+soundName(id)+' soundscape in the browser.'}
+      if(engines[id]){LAYERS.forEach(function(d){engines[d.id].stop()});engines[id].start();renderSoundRows();agentAction('play_sound','Playing '+soundName(id),'done','i-waves');toast('Playing '+soundName(id),'good');return 'Started the '+soundName(id)+' soundscape in the browser.'}
+      agentAction('play_sound','Sound unavailable','error','i-waves');
       return 'That sound is not available.';
     }
-    if(name==='stop_sounds'){LAYERS.forEach(function(d){engines[d.id].stop()});renderSoundRows();toast('Sounds stopped');return 'Stopped all sounds.'}
+    if(name==='stop_sounds'){LAYERS.forEach(function(d){engines[d.id].stop()});renderSoundRows();agentAction('stop_sounds','Stopped sounds','done','i-x');toast('Sounds stopped');return 'Stopped all sounds.'}
     if(name==='note_thought'){
       var t=String(args.text||'').trim();
-      if(!t)return 'Nothing to save.';
+      if(!t){agentAction('note_thought','Nothing to save','error','i-book');return 'Nothing to save.'}
       journal.unshift({id:uid(),ts:Date.now(),text:t,mood:moodLevelFromName(args.mood)});persist();
-      var dj=$('#dock-j');if(dj)dj.hidden=false;toast('Saved a thought to your journal','good');
+      var dj=$('#dock-j');if(dj)dj.hidden=false;agentAction('note_thought','Saved to journal','done','i-book');toast('Saved a thought to your journal','good');
       return 'Saved the note to the journal.';
     }
     if(name==='start_breathing'){
       var pat=args.pattern&&BPATTERNS[args.pattern]?args.pattern:'coherent';
       BR.pat=pat;$$('#br-pattern button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-p')===pat)});
+      agentAction('start_breathing','Started breathing','done','i-wind');
       openSheet('breathe');setTimeout(function(){try{runBreathing()}catch(e){}},350);
       return 'Started a '+pat+' breathing exercise on screen.';
     }
-    if(name==='start_grounding'){openSheet('ground');return 'Opened the 5-4-3-2-1 grounding exercise.'}
+    if(name==='start_grounding'){agentAction('start_grounding','Opened grounding','done','i-leaf');openSheet('ground');return 'Opened the 5-4-3-2-1 grounding exercise.'}
     if(name==='sleep_mode'){
       var mins=args.minutes||15;var sm=$('#sleep-mins');if(sm)sm.value=String(clamp(mins,5,60));
       if(args.sound&&engines[args.sound]){LAYERS.forEach(function(d){engines[d.id].stop()});engines[args.sound].start()}
+      agentAction('sleep_mode','Started sleep mode','done','i-moon');
       try{startSleep()}catch(e){}
       return 'Started sleep mode.';
     }
-  }catch(e){return 'Tool error.'}
+  }catch(e){agentAction(name||'tool','Tool failed','error','i-pulse');return 'Tool error.'}
+  agentAction(name||'tool','Unknown tool','error','i-pulse');
   return 'Unknown tool.';
 }
 
@@ -1917,8 +2054,22 @@ function stripThinking(s){
   s=s.replace(/^\s*(?:Okay|Alright|Let me think|Let's think|Thinking|I need to|First,? I|The user (?:wants|is asking|said))[^.!?\n]*[.!?\n]\s*/i,'');
   return s;
 }
+function setEngineLabel(provider,fallback,model){
+  var el=$('#voice-engine');if(!el)return;
+  if(provider==='groq')el.textContent='Groq · '+(model||'server model')+' · browser voice';
+  else if(provider==='kilo')el.textContent='Kilo Auto · keyless fallback · browser voice';
+  else if(provider==='local')el.textContent='Offline companion · browser voice';
+  else if(fallback)el.textContent='Kilo Auto · OpenRouter fallback · browser voice';
+  else el.textContent='OpenRouter · '+(model||'server model')+' · browser voice';
+}
+function stopForProviderError(message){
+  toast(message,'warn');
+  if(typeof CALL!=='undefined'&&CALL.active&&typeof endVoiceCall==='function'){endVoiceCall();return}
+  finishTurn(true);
+}
 function userTurn(text){
   if(V.busy)return;V.busy=true;turnToken++;
+  clearAgentTrace();
   stopSpeaking();caption('ai','');caption('user','You: '+text);
   var safety=crisisCheck(text)?'crisis':null;pushHistory('user',text);setVoice('thinking');
   if(chatMode()){var draft=$('#chat-list').querySelector('div.msg.user.draft');if(draft){draft.classList.remove('draft');draft.style.opacity='1';draft.querySelector('.bub').textContent=text}else{chatAddUser(text)}caption('user','');chatStreamStart();}
@@ -1948,34 +2099,47 @@ function userTurn(text){
     flushSay(true);
   }
   function runLocalFallback(){
-    clearInterval(talkIv);setNet('local');resetReply();usedLocal=true;setVoice('thinking');
+    clearInterval(talkIv);setNet('local');setEngineLabel('local',false,'offline companion');resetReply();usedLocal=true;setVoice('thinking');
     turnCancel=streamLocal(text,{delta:onDelta,done:function(){if(turnToken!==my)return;finishRound(true)}});
   }
   function step(round){
     if(turnToken!==my)return;
-    var toolCalls=[];
+    var toolCalls=[],pendingTools=[];
     resetReply();setVoice('thinking');
     turnCancel=streamRemote(msgs,safety,{
-      meta:function(evt){if(evt.model&&evt.model.indexOf('local')===0)usedLocal=true},
+      meta:function(evt){
+        if(evt&&evt.provider)setEngineLabel(evt.provider,!!evt.fallback,evt.model);
+        else if(evt.model&&evt.model.indexOf('local')===0)usedLocal=true;
+      },
       delta:onDelta,
-      tool:function(tc){if(turnToken!==my)return;tc.result=executeTool(tc.name,tc.args);toolCalls.push(tc)},
+      tool:function(tc){if(turnToken!==my)return;var pending=Promise.resolve(executeTool(tc.name,tc.args)).then(function(result){tc.result=result;if(turnToken===my)toolCalls.push(tc);return tc}).catch(function(){tc.result='Tool error.';if(turnToken===my)toolCalls.push(tc);return tc});pendingTools.push(pending)},
       done:function(finishReason){
         if(turnToken!==my)return;
-        /* tool-only turn → run the tools (already done) and ask for a spoken reply (cap 3 rounds) */
-        if(toolCalls.length&&round<3&&!stripThinking(rawReply).trim()){
-          msgs.push({role:'assistant',content:fullReply||'',tool_calls:toolCalls.map(function(tc,i){return{id:tc.id||('call_'+my+'_'+i),type:'function',function:{name:tc.name,arguments:tc.args||'{}'}}})});
-          toolCalls.forEach(function(tc,i){msgs.push({role:'tool',tool_call_id:tc.id||('call_'+my+'_'+i),name:tc.name,content:String(tc.result||'ok')})});
-          step(round+1);
-          return;
-        }
-        persist();finishRound(true);
+        Promise.all(pendingTools).then(function(){
+          if(turnToken!==my)return;
+          /* tool-only turn → run the tools and ask for a spoken reply (cap 3 rounds) */
+          if(toolCalls.length&&round<3&&!stripThinking(rawReply).trim()){
+            msgs.push({role:'assistant',content:fullReply||'',tool_calls:toolCalls.map(function(tc,i){return{id:tc.id||('call_'+my+'_'+i),type:'function',function:{name:tc.name,arguments:tc.args||'{}'}}})});
+            toolCalls.forEach(function(tc,i){msgs.push({role:'tool',tool_call_id:tc.id||('call_'+my+'_'+i),name:tc.name,content:String(tc.result||'ok')})});
+            step(round+1);
+            return;
+          }
+          persist();finishRound(true);
+        });
       },
       error:function(code){
         if(turnToken!==my)return;
+        if(code==='groq_password_rate_limited')return stopForProviderError('Too many incorrect Groq password attempts. Wait a few minutes and try again.');
+        if(code==='groq_password')return stopForProviderError('That Groq password was not accepted. Check Settings — PRIMØSHU has not switched providers.');
+        if(code==='groq_rate_limited')return stopForProviderError('Groq is busy right now. Try again shortly — PRIMØSHU has not switched providers.');
+        if(code==='groq_unconfigured')return stopForProviderError('Groq is not configured on this server yet. Add GROQ_API_KEY and GROQ_PASSWORD in Cloudflare.');
+        if(code==='groq_rejected')return stopForProviderError('Groq rejected the server key. Check GROQ_API_KEY in Cloudflare.');
+        if(code==='groq_error')return stopForProviderError('Groq could not complete that reply. No other provider was used.');
         if(code==='rate_limited')toast('The AI is busy right now — a breath\u2019s pause, then try again.','warn');
         else if(code==='bad_key')toast('Your API key wasn\u2019t accepted — check it in Settings.','warn');
         else if(code==='timeout')toast('That took too long. Try again.','warn');
-        else if(code==='no_key')toast('No AI key set — add a free OpenRouter key in Settings for full replies. The offline companion will answer for now.','warn');
+        else if(code==='no_key')toast('No AI key set — Kilo fallback is disabled. The offline companion will answer for now.','warn');
+        else if(code==='kilo_error')toast('OpenRouter failed and the keyless Kilo fallback also failed — switching offline.','warn');
         else toast('Couldn\u2019t reach the AI — switching to the offline companion.','warn');
         runLocalFallback();
       }
@@ -2402,6 +2566,19 @@ function bindText(id,key,after){var e=$(id);e.value=S[key]||'';e.addEventListene
 bindText('#set-endpoint','endpoint',checkHealth);bindText('#set-model','model');
 bindText('#set-em-label','emLabel');bindText('#set-em-number','emNumber');
 bindText('#set-trust-name','trustName');bindText('#set-trust-number','trustNumber');
+(function(){
+  var inp=$('#set-groq-password'),eye=$('#set-groq-password-eye'),status=$('#groq-status');
+  if(!inp||!status)return;
+  function paint(){
+    status.className='key-status'+(groqPassword?' ok':'');
+    status.textContent=groqPassword?'Groq armed for this session — the next reply will try Groq first.':'Groq is locked. Replies use OpenRouter by default.';
+    if(groqPassword)setEngineLabel('groq',false,'server model');
+  }
+  eye.addEventListener('click',function(){var show=inp.type==='password';inp.type=show?'text':'password';eye.setAttribute('aria-pressed',String(show));eye.innerHTML='<svg aria-hidden="true"><use href="#'+(show?'i-eye-off':'i-eye')+'"/></svg>'});
+  inp.addEventListener('input',function(){groqPassword=inp.value.trim();paint()});
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();inp.blur();toast(groqPassword?'Groq armed for this session.':'Groq remains locked.')}});
+  paint();
+})();
 (function(){var inp=$('#set-key'),eye=$('#set-key-eye');inp.value=S.apiKey||'';
   eye.addEventListener('click',function(){var show=inp.type==='password';inp.type=show?'text':'password';eye.setAttribute('aria-pressed',String(show));eye.innerHTML='<svg aria-hidden="true"><use href="#'+(show?'i-eye-off':'i-eye')+'"/></svg>'});
   function commit(){S.apiKey=inp.value.trim();saveSettings();checkHealth();toast(S.apiKey?'Key saved — connecting to OpenRouter directly.':'Key removed — using your server endpoint.')}
@@ -2436,7 +2613,7 @@ function checkHealth(){
   var ctrl=new AbortController();healthT=setTimeout(function(){ctrl.abort()},5000);
   fetch(S.endpoint,{method:'GET',signal:ctrl.signal})
     .then(function(r){if(!r.ok)throw new Error('unavailable');return r.json()})
-    .then(function(info){clearTimeout(healthT);if(info.service!=='calmora'||!info.configured){setNet('local','OpenRouter key needed');setKeyStatus('check','Add your OpenRouter key, or configure OPENROUTER_API_KEY on the server.');return}setNet('on','server mode');setKeyStatus('','Connected to your OpenRouter server.')})
+    .then(function(info){clearTimeout(healthT);var providers=info.providers||{};var bits=[];if(providers.openrouter)bits.push('OpenRouter');if(providers.groq)bits.push('Groq');if(providers.kiloFallback)bits.push('Kilo fallback');var mode=bits.join(' · ')||'keyless Kilo fallback';if(info.service!=='calmora'||!info.configured){setNet('local','provider unavailable');setKeyStatus('check','No provider is configured or reachable.');return}setNet('on','server ready');setKeyStatus('','Ready: '+mode+'.')})
     .catch(function(){clearTimeout(healthT);setNet('local','server offline');setKeyStatus('check','Server unreachable — offline companion is active.')});
 }
 window.addEventListener('online',function(){checkHealth();toast('Back online.')});

@@ -1,7 +1,7 @@
 /* Calmora service worker — makes the app installable and works offline.
    Strategy: cache the app shell; always hit the network for /api/* (the AI);
    network-first for page navigations with a cached fallback. */
-const CACHE = 'calmora-v5-primoshu-nightfall';
+const CACHE = 'calmora-v6-primoshu-voice-agent';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg', '/workspace.css', '/nightfall.css', '/assets/fonts/fraunces-latin-normal.woff2', '/assets/fonts/fraunces-latin-italic.woff2', '/assets/fonts/karla-latin-normal.woff2'];
 
 self.addEventListener('install', (e) => {

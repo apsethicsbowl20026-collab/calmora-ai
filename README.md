@@ -77,10 +77,10 @@ Most "AI wellness" apps are thin chat wrappers. Calmora is a **complete, calm, t
 | | |
 |---|---|
 | 🎙️ **Voice-first** | Tap to talk, watch your words fill the prompt bar, auto-send 2s after you stop. Hands-free auto-continue keeps the conversation flowing. |
-| 🔵🟡🟠 **Living orb** | Real audio-reactive orb with colour states for idle / listening / thinking / speaking. |
+| 🔵🟡🟠 **Living orb** | A full-screen call-stage orb with colour states, live captions, agent activity, and source cards — not a push-to-talk widget. |
 | 💬 **Beautiful chat UI** | Toggle between the orb view and a full streaming chat (bubbles, avatars, typing indicator, caret, stop button). |
 | 🧠 **Therapeutic AI** | A compact system prompt that listens, validates, *then actually helps* — CBT reframes, behavioural activation, grounding, psychoeducation. |
-| 🛠️ **Tool-using agent** | Plays sounds, journals thoughts, launches exercises — a real agentic loop, not just chat. |
+| 🛠️ **Tool-using agent** | Plays sounds, journals thoughts, launches exercises, and searches the live web with source cards — a real agentic loop, not just chat. |
 | 🌧️ **Live audio engine** | Rain, ocean, forest, brown noise, fireplace, night, cave — all synthesised in-browser with the Web Audio API. No audio files. |
 | 🧘 **Evidence-based tools** | 6 breathing patterns, 5-4-3-2-1 grounding, PMR, ACT values clarification, journaling, mood insights. |
 | 📴 **Offline PWA** | Installable, runs offline (the shell + every wellness tool work without a connection). |
@@ -192,7 +192,7 @@ open index.html        # (voice/AI need https or localhost; see Browser support)
 
 Then visit the URL. For **real voice + AI**, open it over **https** or **localhost** (browsers block the microphone otherwise).
 
-> 💡 Without a backend you'll get the **offline companion** (pattern-matched empathetic replies) and all wellness tools. For real streaming AI + tools, [deploy the `/api/chat` function](#-deployment-cloudflare-pages).
+> 💡 Without a backend or any configured provider, you'll get the **offline companion** (pattern-matched empathetic replies) and all wellness tools. With a deployed `/api/chat`, non-crisis turns can use keyless Kilo Auto even without an OpenRouter key. For the full experience — Groq, web search, agent tools — [deploy the functions](#-deployment-cloudflare-pages).
 
 ---
 
@@ -203,11 +203,17 @@ flowchart LR
     U([👤 User]) -->|voice / text| UI[index.html · PWA shell]
     UI -->|Web Speech API| SR[SpeechRecognition]
     SR -->|transcript| UI
-    UI -->|POST messages + tools| API[/api/chat · Cloudflare Function/]
-    API -->|system prompt + tools| OR[(OpenRouter)]
-    OR -->|SSE stream: content + tool_calls| API
-    API -->|NDJSON: delta · tool · done| UI
-    UI -->|tool call| TOOLS[Browser tools<br/>play_sound · note_thought · …]
+    UI -->|POST messages + tools| API[/api/chat · provider router/]
+    API -->|Groq password?| GROQ[(Groq)]
+    API -->|default| OR[(OpenRouter)]
+    API -->|OpenRouter failure · non-crisis| KILO[(Kilo Auto · keyless)]
+    GROQ -->|SSE stream| API
+    OR -->|SSE stream| API
+    KILO -->|SSE stream| API
+    API -->|NDJSON: delta · meta · tool · done| UI
+    UI -->|web_search tool| SEARCH[/api/search · Tavily proxy/]
+    SEARCH --> UI
+    UI -->|other tools| TOOLS[Browser tools<br/>play_sound · note_thought · …]
     TOOLS --> UI
     UI -->|persist| LS[(localStorage<br/>journal · moods · stats)]
 ```
@@ -215,7 +221,9 @@ flowchart LR
 **Two tiers, cleanly separated:**
 
 - **`index.html`** — the entire client: UI, orb, Web Audio engine, wellness tools, agent loop, PWA. Talks to the server over a tiny NDJSON streaming protocol.
-- **`chat.js`** — a Cloudflare Pages Function (`/api/chat`) that owns the **system prompt**, the **key**, **rate limiting**, and **tool definitions**, then streams OpenRouter back to the client. The client *never* sees your server key.
+- **Provider-routed** — Groq with a shared access password, OpenRouter by default, and a keyless Kilo Auto fallback when OpenRouter fails (non-crisis turns only).
+- **`chat.js`** — a Cloudflare Pages Function (`/api/chat`) that owns the **system prompt**, the **keys**, **provider routing**, **rate limiting**, and **tool definitions**, then streams the selected model back to the client. The client *never* sees server keys.
+- **`search.js`** — a Cloudflare Pages Function (`/api/search`) that proxies Tavily for the `web_search` tool. The browser receives sanitized results and source links, never `TAVILY_API_KEY`.
 
 ---
 
@@ -224,7 +232,10 @@ flowchart LR
 ```
 .
 ├── index.html            # the whole app (UI + logic + styles) — single file
-├── chat.js               # Cloudflare Pages Function  →  /api/chat  (AI + tools + limits)
+├── functions/
+│   └── api/
+│       ├── chat.js       # /api/chat — prompt, provider routing, tools, limits
+│       └── search.js     # /api/search — Tavily web-search proxy
 ├── sw.js                 # service worker (offline PWA shell)
 ├── manifest.webmanifest  # PWA manifest
 ├── icon.svg              # app icon (maskable)
@@ -248,6 +259,7 @@ flowchart LR
 └── functions/
     └── api/
         ├── chat.js       # → handles POST /api/chat
+        └── search.js     # → handles POST /api/search
 ```
 
 ---
@@ -267,16 +279,37 @@ Calmora is built for **Cloudflare Pages** (free tier is plenty).
 
    | Variable | Required | Default | Purpose |
    |---|---|---|---|
-   | `OPENROUTER_API_KEY` | ✅ (or BYOK) | — | Server-side fallback AI key (users can also bring their own). |
-   | `OPENROUTER_MODEL` | optional | `openrouter/free` | Default model id. |
-   | `ALLOWED_ORIGIN` | optional | `*` | CORS allow-list for `/api/chat`. |
-   | `MAX_CONCURRENCY_SERVER` | optional | `2` | Concurrent slots for server-key users (per isolate). |
+   | `OPENROUTER_API_KEY` | optional* | — | Default OpenRouter key. *If unset, non-crisis turns use keyless Kilo Auto unless disabled. Users can also bring their own key. |
+   | `OPENROUTER_MODEL` | optional | `openrouter/free` | Default OpenRouter model id. |
+   | `GROQ_API_KEY` | for Groq | — | Groq server key, used only when `GROQ_PASSWORD` is also supplied by the user. |
+   | `GROQ_PASSWORD` | for Groq | — | Shared access word that switches that request to Groq. Keep this separate from the API key. |
+   | `GROQ_MODEL` | optional | `llama-3.3-70b-versatile` | Groq model id. |
+   | `KILO_MODEL` | optional | `kilo-auto/free` | Keyless Kilo fallback model. |
+   | `KILO_FALLBACK` | optional | `1` | Set to `0` to disable the Kilo fallback entirely. |
+   | `TAVILY_API_KEY` | for web search | — | Enables `web_search`; never exposed to the browser. |
+   | `ALLOWED_ORIGIN` | optional | `*` | CORS allow-list for `/api/chat` and `/api/search`. |
+   | `MAX_CONCURRENCY_SERVER` | optional | `2` | Concurrent slots for shared server providers (per isolate). |
    | `MAX_CONCURRENCY_BYOK` | optional | `8` | Concurrent slots for bring-your-own-key users. |
    | `APP_URL` | optional | `https://calmora.pages.dev` | Sent as OpenRouter `HTTP-Referer`. |
 
 6. Done. Open your `*.pages.dev` URL, allow the microphone, install it from the browser menu.
 
 > **Rate limiting** is concurrency-only (in-memory, per isolate): a slot frees the instant a stream ends — no time windows, no token buckets, no databases required.
+
+### Provider routing
+
+1. **Groq** is selected only when the user enters the shared `GROQ_PASSWORD` in Settings. The password is kept in memory for this session, is never written to `localStorage`, and a wrong password stops the turn with a clear error — it never silently falls back to OpenRouter or the offline companion. Repeated wrong attempts are throttled per isolate (10 attempts in 10 minutes).
+2. **OpenRouter** is the default when no Groq password is entered. A client-side BYOK key is sent only to your `/api/chat` function (or directly to OpenRouter when that mode is active).
+3. If OpenRouter returns an HTTP/network failure, the server falls back to **Kilo Auto** (`kilo-auto/free`) through `https://api.kilo.ai/api/gateway/chat/completions`. Set `KILO_FALLBACK=0` to disable this. The fallback is **never** used for crisis-flagged turns.
+
+> ⚠️ Kilo Auto is a keyless shared endpoint; upstream providers may log prompts. Do not use it for sensitive content, and disable it if that is not acceptable for your deployment.
+
+### Web search
+
+- `web_search` is a tool the model can call for current or source-dependent information.
+- The browser calls your own `/api/search`, which holds `TAVILY_API_KEY` and returns only up to six sanitized results.
+- Source cards appear under the voice UI and can be opened in a new tab. Search results are not saved to the journal.
+- Web search is not used for ordinary emotional-support turns.
 
 ---
 
@@ -287,6 +320,7 @@ Most settings live in the in-app **Settings** panel (top-right gear) and persist
 | Setting | What it controls |
 |---|---|
 | **OpenRouter API key** | Optional BYOK — uses *your* quota; otherwise the server key is used. Stored only on-device. |
+| **Groq access password** | Session-only switch to the server’s Groq key. Not saved; incorrect passwords show a clear error and do not switch providers. |
 | **API endpoint** | Defaults to your `/api/chat`. Point anywhere OpenAI-compatible. |
 | **Model** | Any OpenRouter model id (e.g. `openrouter/free`). |
 | **Auto-continue listening** | Reopen the mic after each reply. |
@@ -329,8 +363,8 @@ Key reliability choices:
 Calmora isn't a single prompt → single reply. It runs a **multi-round agent loop**:
 
 1. Your message + the conversation go to `/api/chat`, which attaches the **system prompt** and **tool schemas**.
-2. The model streams a reply **and/or tool calls**. The server emits NDJSON events: `delta` (text), `tool` (a completed call), `done(finish_reason)`.
-3. **Tool calls execute instantly in the browser** — the rain starts playing, the note saves, the exercise opens.
+2. The model streams a reply **and/or tool calls**. The server emits NDJSON events: `delta` (text), `meta` (provider/fallback), `tool` (a completed call), `done(finish_reason)`.
+3. **Tool calls execute immediately** — `web_search` calls `/api/search`; other tools run in the browser. The voice UI shows an agent activity pill and, for web search, source cards.
 4. If the model acted without speaking, the client feeds the **tool results back** and asks for one short spoken sentence (capped at 3 rounds).
 5. The reply streams into the chat, is spoken aloud, and the mic reopens.
 
@@ -449,7 +483,7 @@ Open the site over **https** (or `localhost`) and allow the mic. The in-app sand
 <details>
 <summary><b>It listens but doesn't reply / replies are canned</b></summary>
 
-That's the **offline companion** — meaning `/api/chat` isn't reachable or no key is set. Deploy `chat.js` as `functions/api/chat.js` and set `OPENROUTER_API_KEY` (or enter a BYOK key in Settings).
+That's the **offline companion** — meaning `/api/chat` isn't reachable, or every provider failed and Kilo fallback is disabled/unavailable. Deploy `functions/api/chat.js`, set `OPENROUTER_API_KEY` (or enter a BYOK key in Settings), or confirm the keyless Kilo fallback is not disabled in Pages env vars.
 
 </details>
 
