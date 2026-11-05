@@ -3,18 +3,26 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { JSDOM, VirtualConsole } from 'jsdom';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-function workspace({ recognition = false, streaming = false, direct = false, savedTheme, systemDark = false } = {}) {
+function workspace({ recognition = false, streaming = false, direct = false, savedTheme, systemDark = false, streamResponse } = {}) {
   const errors = [];
   const console = new VirtualConsole();
   console.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM(html, {
     url: 'https://calmora.test', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: console,
     beforeParse(w) {
-      w.requests=[];w.requestUrls=[];w.utterances=[];w.TextDecoder=TextDecoder;
+      w.requests=[];w.requestUrls=[];w.utterances=[];w.searchRequests=[];w.TextDecoder=TextDecoder;
       if(direct)w.localStorage.setItem('calmora:settings',JSON.stringify({apiKey:'sk-test-key'}));
       w.fetch = async (url, options) => {
+        if(url==='/api/search'&&options?.method==='POST'){
+          w.searchRequests.push(JSON.parse(options.body));
+          return new Response(JSON.stringify({provider:'tavily',results:[
+            {title:'Example News',url:'https://example.com/news',content:'A current source for the test.'},
+            {title:'Second Source',url:'https://second.test/story',content:'More detail from another source.'}
+          ]}),{status:200,headers:{'Content-Type':'application/json'}});
+        }
         if(streaming&&options?.method==='POST'){
           w.requests.push(JSON.parse(options.body));w.requestUrls.push(url);
+          if(streamResponse)return streamResponse(w.requests.at(-1),w.requests.length);
           if(direct)return new Response('data: '+JSON.stringify({choices:[{delta:{content:'Take your time. I am here.'}}]})+'\n\ndata: [DONE]\n\n');
           return new Response(JSON.stringify({type:'delta',text:'Take your time. I am here.'})+'\n'+JSON.stringify({type:'done'})+'\n');
         }
@@ -167,8 +175,75 @@ test('OpenRouter BYOK uses its streaming endpoint directly without an extra serv
     assert.equal(w.requests.length,1);
     assert.equal(w.requestUrls[0],'https://openrouter.ai/api/v1/chat/completions');
     assert.equal(w.requests[0].messages[0].role,'system');
-    assert.equal(w.requests[0].tools.length,6);
+    assert.equal(w.requests[0].tools.length,7);
     assert.ok(w.utterances.length);
+    d.querySelector('#call-hangup').click();
+    assert.deepEqual(errors,[]);
+  } finally {await new Promise(resolve=>setTimeout(resolve,50));dom.window.close()}
+});
+
+test('Groq password stays session-only and is sent only with chat requests', async () => {
+  const { dom, w, d, errors } = workspace({ recognition: true, streaming: true });
+  const result=(text,index=0,final=true)=>({resultIndex:index,results:Object.assign(Array(index).fill(null),{[index]:Object.assign([{transcript:text}],{isFinal:final})})});
+  try {
+    const groqInput=d.querySelector('#set-groq-password');
+    groqInput.value='top-secret-groq-word';
+    groqInput.dispatchEvent(new w.Event('input',{bubbles:true}));
+    assert.equal(JSON.parse(w.localStorage.getItem('calmora:settings')||'{}').groqPassword,undefined);
+    d.querySelector('#talk-cta').click();
+    w.lastRecognizer.onresult(result('Tell me something grounded'));
+    w.lastRecognizer.onspeechend();
+    await new Promise(resolve=>setTimeout(resolve,950));
+    assert.equal(w.requests[0].groqPassword,'top-secret-groq-word');
+    assert.equal(JSON.parse(w.localStorage.getItem('calmora:settings')).groqPassword,undefined);
+    d.querySelector('#call-hangup').click();
+    assert.deepEqual(errors,[]);
+  } finally {await new Promise(resolve=>setTimeout(resolve,50));dom.window.close()}
+});
+
+test('an incorrect Groq password stops clearly without silently using OpenRouter or offline voice', async () => {
+  const streamResponse=()=>new Response(JSON.stringify({type:'error',code:'groq_password',message:'That Groq password was not accepted.'})+'\n',{status:401,headers:{'Content-Type':'application/x-ndjson'}});
+  const { dom, w, d, errors } = workspace({ recognition: true, streaming: true, streamResponse });
+  const result={resultIndex:0,results:[Object.assign([{transcript:'Try Groq'}],{isFinal:true})]};
+  try {
+    const groqInput=d.querySelector('#set-groq-password');
+    groqInput.value='wrong-password';
+    groqInput.dispatchEvent(new w.Event('input',{bubbles:true}));
+    d.querySelector('#talk-cta').click();
+    w.lastRecognizer.onresult(result);
+    w.lastRecognizer.onspeechend();
+    await new Promise(resolve=>setTimeout(resolve,950));
+    assert.match(d.querySelector('#toast-region').textContent,/Groq password was not accepted/);
+    assert.equal(w.utterances.length,0,'wrong password must not produce spoken fallback output');
+    assert.equal(d.body.classList.contains('state-idle'),true);
+    assert.deepEqual(errors,[]);
+  } finally {await new Promise(resolve=>setTimeout(resolve,50));dom.window.close()}
+});
+
+test('web_search tool calls the private search proxy and renders source cards', async () => {
+  let round=0;
+  const streamResponse=()=>{
+    round += 1;
+    if(round===1){
+      return new Response(JSON.stringify({type:'tool',id:'call_search_1',name:'web_search',args:JSON.stringify({query:'latest project update',topic:'news',time_range:'week'})})+'\n'+JSON.stringify({type:'done',finish_reason:'tool_calls'})+'\n',{status:200,headers:{'Content-Type':'application/x-ndjson'}});
+    }
+    return new Response(JSON.stringify({type:'delta',text:'Here is what the current sources say.'})+'\n'+JSON.stringify({type:'done',finish_reason:'stop'})+'\n',{status:200,headers:{'Content-Type':'application/x-ndjson'}});
+  };
+  const { dom, w, d, errors } = workspace({ recognition: true, streaming: true, streamResponse });
+  const result={resultIndex:0,results:[Object.assign([{transcript:'What is in the news this week'}],{isFinal:true})]};
+  try {
+    d.querySelector('#talk-cta').click();
+    w.lastRecognizer.onresult(result);
+    w.lastRecognizer.onspeechend();
+    await new Promise(resolve=>setTimeout(resolve,1600));
+    assert.equal(w.searchRequests.length,1);
+    assert.deepEqual(w.searchRequests[0].query,'latest project update');
+    assert.equal(d.querySelector('#agent-sources').hidden,false);
+    assert.match(d.querySelector('#agent-sources').textContent,/Example News/);
+    assert.equal(d.querySelectorAll('.source-card').length,2);
+    assert.equal(w.requests.length,2,'tool results should be sent back for the spoken answer');
+    assert.equal(w.requests[1].messages.at(-1).role,'tool');
+    assert.match(w.requests[1].messages.at(-1).content,/https:\/\/example\.com\/news/);
     d.querySelector('#call-hangup').click();
     assert.deepEqual(errors,[]);
   } finally {await new Promise(resolve=>setTimeout(resolve,50));dom.window.close()}
